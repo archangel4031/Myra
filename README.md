@@ -18,6 +18,8 @@ Myra is the next iteration of GAS Associate. Inspired by the Lyra Starter Projec
 
 Myra is still in alpha phase of development. It is not recommended to use Myra in production just yet. You are encouraged to contribute to the development of the new plugin and provide feedback. For older version use the plugin from the [Releases page](https://github.com/archangel4031/Myra/releases)
 
+The default branch is now *main* instead of *master*. GAS Associate is deprecated and can be found on the *master* branch.
+
 ---
 
 ### Description:
