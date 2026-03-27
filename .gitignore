@@ -1,0 +1,11 @@
+
+Binaries
+Intermediate
+DerivedDataCache
+Saved
+.vscode
+.vs
+_docs/
+.vsconfig
+VisualStudioTools/
+/Content/*

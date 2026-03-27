@@ -1,0 +1,184 @@
+// Copyright Myra . All Rights Reserved.
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
+#include "GameplayTagAssetInterface.h"
+#include "GameplayEffectTypes.h"
+#include "MyraCharacter.generated.h"
+
+class UMyraAbilitySystemComponent;
+class UMyraAttributeSet;
+class UMyraAbilitySet;
+class UGameplayEffect;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMyraOnDeath, AMyraCharacter*, DeadCharacter, AActor*, Killer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMyraOnHealthChanged, AMyraCharacter*, Character, float, OldValue, float, NewValue);
+
+/**
+ * AMyraCharacter
+ *
+ * Base character class for Myra . Supports two initialization patterns:
+ *
+ *  A) MULTIPLAYER (default): ASC lives on PlayerState.
+ *     The Character only holds a cached pointer to the PlayerState's ASC.
+ *     Set bUsePlayerStateASC = true (default).
+ *
+ *  B) SINGLE-PLAYER / AI: ASC lives on the Character.
+ *     Set bUsePlayerStateASC = false on your subclass defaults.
+ *     The Character owns and initializes its own ASC.
+ *
+ * SETUP CHECKLIST:
+ *   [ ] Subclass AMyraCharacter
+ *   [ ] Set your PlayerStateClass to AMyraPlayerState (if multiplayer)
+ *   [ ] Add UMyraAbilitySet assets to DefaultAbilitySets (if single-player / AI)
+ *   [ ] Add your GE_Init GameplayEffect to initialize attribute values
+ */
+UCLASS(Abstract)
+class MYRA_API AMyraCharacter : public ACharacter,
+	public IAbilitySystemInterface,
+	public IGameplayTagAssetInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	AMyraCharacter();
+
+	//~ Begin IAbilitySystemInterface
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	//~ End IAbilitySystemInterface
+
+	//~ Begin IGameplayTagAssetInterface
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	//~ End IGameplayTagAssetInterface
+
+	// ------------------------------------------------
+	//  Accessors
+	// ------------------------------------------------
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
+	UMyraAbilitySystemComponent* GetMyraAbilitySystemComponent() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
+	const UMyraAttributeSet* GetBaseAttributeSet() const;
+
+	// ------------------------------------------------
+	//  Attribute Helpers (Blueprint-friendly)
+	// ------------------------------------------------
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetMana() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetMaxMana() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetStamina() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetMaxStamina() const;
+
+	/** Normalized health [0..1]. Perfect for health bar UI. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetHealthPercent() const;
+
+	// ------------------------------------------------
+	//  State Queries
+	// ------------------------------------------------
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |State")
+	bool IsAlive() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |State")
+	bool IsDead() const { return !IsAlive(); }
+
+	// ------------------------------------------------
+	//  Events
+	// ------------------------------------------------
+
+	/** Fires on server and owning client when Health reaches zero. */
+	UPROPERTY(BlueprintAssignable, Category = "Myra |Events")
+	FMyraOnDeath OnDeathEvent;
+
+	/** Fires whenever Health changes (damage or healing). Useful for UI. */
+	UPROPERTY(BlueprintAssignable, Category = "Myra |Events")
+	FMyraOnHealthChanged OnHealthChanged;
+
+	// ------------------------------------------------
+	//  Configuration
+	// ------------------------------------------------
+
+	/**
+	 * If true (default), the ASC is taken from the PlayerState.
+	 * Set false for AI or single-player characters that own their own ASC.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration")
+	bool bUsePlayerStateASC = true;
+
+	/**
+	 * AbilitySets to grant when this character initializes its own ASC
+	 * (i.e. when bUsePlayerStateASC is false). Ignored when using PlayerState ASC.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration",
+		meta = (EditCondition = "!bUsePlayerStateASC"))
+	TArray<TObjectPtr<UMyraAbilitySet>> DefaultAbilitySets;
+
+	/**
+	 * Gameplay Effect applied on init to set starting attribute values.
+	 * Create a Blueprint GE of type "Instant" with modifiers that Override each attribute.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration")
+	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;
+
+protected:
+
+	//~ Begin AActor / ACharacter Interface
+	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;       // Server
+	virtual void OnRep_PlayerState() override;                           // Client
+	//~ End AActor / ACharacter Interface
+
+	/**
+	 * Called on both server and client once the ASC avatar is fully set up.
+	 * Override in subclasses to bind to attribute change delegates, etc.
+	 */
+	virtual void OnAbilitySystemInitialized();
+
+	/** Called when Health reaches 0. Override to play death animations, ragdoll, etc. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Myra |Events")
+	void OnDeath(AActor* Killer);
+	virtual void OnDeath_Implementation(AActor* Killer);
+
+private:
+
+	// The ASC pointer — either points to PlayerState's ASC or to the owned one below.
+	UPROPERTY()
+	TObjectPtr<UMyraAbilitySystemComponent> AbilitySystemComponentRef;
+
+	// Owned ASC — only created when bUsePlayerStateASC = false.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myra |Components",
+		meta = (AllowPrivateAccess = "true", EditCondition = "!bUsePlayerStateASC"))
+	TObjectPtr<UMyraAbilitySystemComponent> OwnedAbilitySystemComponent;
+
+	// Owned base attribute set — only created when bUsePlayerStateASC = false.
+	UPROPERTY()
+	TObjectPtr<UMyraAttributeSet> OwnedAttributeSet;
+
+	void InitAbilitySystemForPlayerState();
+	void InitAbilitySystemOwned();
+	void BindAttributeChangeCallbacks();
+	void ApplyDefaultAttributeInitEffect();
+
+	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
+	void HandleDeathTag(const FGameplayTag GameplayTag, int32 NewCount);
+
+	bool bAbilitySystemInitialized = false;
+};
