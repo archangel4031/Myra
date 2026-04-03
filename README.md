@@ -12,6 +12,8 @@ Myra is the next iteration of GAS Associate. Inspired by the Lyra Starter Projec
 
 **Myra plugin is compiled for Unreal Engine 5.7**
 
+Refer to [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to use the plugin in its current state. Documentation is still in progress and things may change without notice.
+
 ---
 
 ### ⚠️ WARNING ⚠️
