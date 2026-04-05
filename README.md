@@ -3,6 +3,7 @@
 [![Discord](https://img.shields.io/discord/820665024137789472?label=discord&style=for-the-badge)](https://discord.gg/nfkTafPJKK)
 [![GitHub last commit](https://img.shields.io/github/last-commit/archangel4031/Myra?color=%237d0096&style=for-the-badge)](https://github.com/archangel4031/Myra)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/archangel4031/Myra?color=%23ad0000&label=latest%20release&style=for-the-badge)](https://github.com/archangel4031/Myra/releases)
+![Static Badge](https://img.shields.io/badge/Unreal_Engine-5.7-cyan?style=for-the-badge)
 [![GitHub repo size](https://img.shields.io/github/repo-size/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra)
 [![GitHub forks](https://img.shields.io/github/forks/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/network/members)
 [![GitHub Repo stars](https://img.shields.io/github/stars/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/stargazers)
@@ -22,6 +23,9 @@ The default branch is now *main* instead of *master*. GAS Associate is deprecate
 
 ---
 
+_Following is the description for old plugin version (GAS Associate)_
+This will be updated once the Myra Plugin moves from alpha to stable.
+
 ### Description:
 
 This is the source code for for the Plugin Myra, that is supposed to make your life easier while using Unreal's Gameplay Ability System.
@@ -37,7 +41,7 @@ The plugin contains all the necessary C++ files required to make Gameplay Abilit
 The repo contains blank C++ based projects for Unreal 5.0
 *Unreal 4.27 project is out of support and moved to [legacy](https://github.com/archangel4031/Myra/tree/legacyUE4UE5) branch*
 
-### How to Use
+### How to Use (for Old Version - GAS Associate):
 ###### Use Template Blank Project
 
  1. Download the Blank Project according to your required Engine Version
