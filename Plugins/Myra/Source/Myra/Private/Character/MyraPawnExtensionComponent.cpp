@@ -130,7 +130,7 @@ void UMyraPawnExtensionComponent::ApplyCharacterData()
 		// Apply the default attribute init GE to set starting stat values.
 		if (CharacterData->DefaultAttributeInitEffect)
 		{
-			ASC->ApplyEffectToSelf(CharacterData->DefaultAttributeInitEffect, 1.f);
+			ASC->ApplyInitializationEffectOnce(CharacterData->DefaultAttributeInitEffect, 1.f, CharacterData);
 		}
 	}
 

@@ -70,6 +70,14 @@ struct FMyraAbilitySet_GameplayEffect
 	/** Level to apply the effect at. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float EffectLevel = 1.f;
+
+	/**
+	 * Mark true if this effect is your attribute initialization effect.
+	 * Myra will apply it through the guarded init path and skip duplicate applications
+	 * from Character or CharacterData setup.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
+	bool bTreatAsAttributeInitializationEffect = false;
 };
 
 // -------------------------------------------------------
@@ -117,7 +125,7 @@ public:
 		meta = (TitleProperty = "AttributeSetClass"))
 	TArray<FMyraAbilitySet_AttributeSet> GrantedAttributeSets;
 
-	/** Gameplay Effects to apply when this set is applied. */
+	/** Gameplay Effects to apply when this set is applied. Mark init effects explicitly so duplicates can be skipped. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Ability Set",
 		meta = (TitleProperty = "GameplayEffectClass"))
 	TArray<FMyraAbilitySet_GameplayEffect> GrantedGameplayEffects;

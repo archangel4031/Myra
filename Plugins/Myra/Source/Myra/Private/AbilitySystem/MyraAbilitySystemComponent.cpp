@@ -102,6 +102,38 @@ FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyEffectToSelf(
 	return FActiveGameplayEffectHandle();
 }
 
+FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyInitializationEffectOnce(
+	TSubclassOf<UGameplayEffect> EffectClass,
+	float Level,
+	const UObject* SourceObject)
+{
+	if (!EffectClass)
+	{
+		return FActiveGameplayEffectHandle();
+	}
+
+	const UClass* EffectClassPtr = EffectClass.Get();
+	if (AppliedInitializationEffectClasses.Contains(EffectClassPtr))
+	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("Myra: Skipping duplicate attribute initialization effect '%s' on ASC '%s' from '%s'. Use only one initialization path for a given init effect."),
+			*GetNameSafe(EffectClassPtr),
+			*GetNameSafe(GetOwner()),
+			*GetNameSafe(SourceObject));
+		return FActiveGameplayEffectHandle();
+	}
+
+	const FActiveGameplayEffectHandle Handle = ApplyEffectToSelf(EffectClass, Level);
+	if (Handle.IsValid())
+	{
+		AppliedInitializationEffectClasses.Add(EffectClassPtr);
+	}
+
+	return Handle;
+}
+
 // ------------------------------------------------
 //  Attribute Change Broadcasting
 //  NotifyAttributeChanged is called by UGASAttributeSet::PostAttributeChange,

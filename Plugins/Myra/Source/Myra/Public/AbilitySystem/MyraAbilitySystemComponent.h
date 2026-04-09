@@ -76,6 +76,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Myra |Effects")
 	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass, float Level = 1.f);
 
+	/**
+	 * Apply an attribute initialization effect only once per ASC.
+	 * Use this for your one chosen initialization path: Character, CharacterData, or AbilitySet.
+	 * Duplicate applications of the same effect class are skipped with a warning.
+	 */
+	FActiveGameplayEffectHandle ApplyInitializationEffectOnce(
+		TSubclassOf<UGameplayEffect> EffectClass,
+		float Level,
+		const UObject* SourceObject);
+
 	// ------------------------------------------------
 	//  Events
 	// ------------------------------------------------
@@ -103,4 +113,7 @@ protected:
 	/** Handles returned when granting abilities from sets, keyed by AbilitySet pointer. */
 	TMap<const UMyraAbilitySet*, TArray<FGameplayAbilitySpecHandle>> GrantedAbilityHandles;
 	TMap<const UMyraAbilitySet*, TArray<FActiveGameplayEffectHandle>> GrantedEffectHandles;
+
+	/** Tracks attribute init effect classes already applied so only one init path wins. */
+	TSet<const UClass*> AppliedInitializationEffectClasses;
 };

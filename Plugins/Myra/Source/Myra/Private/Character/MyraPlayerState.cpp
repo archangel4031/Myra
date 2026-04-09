@@ -28,13 +28,32 @@ UAbilitySystemComponent* AMyraPlayerState::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+float AMyraPlayerState::GetHealth() const
+{
+	return AttributeSet ? AttributeSet->GetHealth() : 0.f;
+}
+
+float AMyraPlayerState::GetMaxHealth() const
+{
+	return AttributeSet ? AttributeSet->GetMaxHealth() : 0.f;
+}
+
+float AMyraPlayerState::GetHealthPercent() const
+{
+	const float Max = GetMaxHealth();
+	return (Max > 0.f) ? (GetHealth() / Max) : 0.f;
+}
+
 void AMyraPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Only the server grants abilities. They replicate to clients automatically.
-	if (GetLocalRole() == ROLE_Authority)
+	// Initialize owner-side ASC state on the server once the PlayerState is live.
+	// The avatar may still be null here; the Character will re-init later with itself
+	// as the avatar from PossessedBy / OnRep_PlayerState.
+	if (HasAuthority() && AbilitySystemComponent)
 	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
 		GrantDefaultAbilitySets();
 	}
 }

@@ -171,7 +171,7 @@ void AMyraCharacter::OnAbilitySystemInitialized()
 	}
 	bAbilitySystemInitialized = true;
 
-	// Apply startup GE to set initial attribute values (Health=100, Mana=50, etc.)
+	// Apply startup GE to set initial attribute values.
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		ApplyDefaultAttributeInitEffect();
@@ -185,7 +185,7 @@ void AMyraCharacter::ApplyDefaultAttributeInitEffect()
 {
 	if (DefaultAttributeInitEffect && AbilitySystemComponentRef)
 	{
-		AbilitySystemComponentRef->ApplyEffectToSelf(DefaultAttributeInitEffect, 1.f);
+		AbilitySystemComponentRef->ApplyInitializationEffectOnce(DefaultAttributeInitEffect, 1.f, this);
 	}
 }
 
@@ -203,7 +203,7 @@ void AMyraCharacter::BindAttributeChangeCallbacks()
 
 	// Listen for the Death gameplay tag being added (set by the attribute set).
 	AbilitySystemComponentRef->RegisterGameplayTagEvent(
-		MyraGameplayTags::State_Dead,
+		MyraGameplayTags::Myra_State_Dead,
 		EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AMyraCharacter::HandleDeathTag);
 }
@@ -226,42 +226,6 @@ float AMyraCharacter::GetMaxHealth() const
 	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
 	{
 		return AS->GetMaxHealth();
-	}
-	return 1.f;
-}
-
-float AMyraCharacter::GetMana() const
-{
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
-	{
-		return AS->GetMana();
-	}
-	return 0.f;
-}
-
-float AMyraCharacter::GetMaxMana() const
-{
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
-	{
-		return AS->GetMaxMana();
-	}
-	return 1.f;
-}
-
-float AMyraCharacter::GetStamina() const
-{
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
-	{
-		return AS->GetStamina();
-	}
-	return 0.f;
-}
-
-float AMyraCharacter::GetMaxStamina() const
-{
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
-	{
-		return AS->GetMaxStamina();
 	}
 	return 1.f;
 }

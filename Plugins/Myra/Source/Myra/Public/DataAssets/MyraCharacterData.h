@@ -62,8 +62,11 @@ public:
 
 	/**
 	 * Gameplay Effect that sets the starting attribute values for this character type.
-	 * Create a Blueprint GE with Duration = Instant and Modifiers that Override each attribute.
-	 * Example: Override Health = 200, Override MaxHealth = 200, Override Mana = 75...
+	 * Create a Blueprint GE with Duration = Instant and Modifiers that Override the
+	 * attributes defined by your base or custom attribute sets.
+	 * Example: Override Health = 200, Override MaxHealth = 200.
+	 * Use only one attribute initialization path for a given character:
+	 * CharacterData, the Character's DefaultAttributeInitEffect, or an AbilitySet init effect.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Character|Abilities")
 	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;

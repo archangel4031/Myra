@@ -95,7 +95,10 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 			continue;
 		}
 
-		FActiveGameplayEffectHandle Handle = ASC->ApplyEffectToSelf(Entry.GameplayEffectClass, Entry.EffectLevel);
+		const FActiveGameplayEffectHandle Handle = Entry.bTreatAsAttributeInitializationEffect
+			? ASC->ApplyInitializationEffectOnce(Entry.GameplayEffectClass, Entry.EffectLevel, this)
+			: ASC->ApplyEffectToSelf(Entry.GameplayEffectClass, Entry.EffectLevel);
+
 		if (Handle.IsValid())
 		{
 			OutEffectHandles.Add(Handle);

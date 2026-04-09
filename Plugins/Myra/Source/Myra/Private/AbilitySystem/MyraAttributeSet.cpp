@@ -14,10 +14,6 @@ UMyraAttributeSet::UMyraAttributeSet()
 	// (see UMyraAbilitySet and GE_Init* blueprints).
 	InitHealth(100.f);
 	InitMaxHealth(100.f);
-	InitMana(50.f);
-	InitMaxMana(50.f);
-	InitStamina(100.f);
-	InitMaxStamina(100.f);
 	InitDamage(0.f);
 	InitHealing(0.f);
 }
@@ -30,10 +26,6 @@ void UMyraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	// (e.g. clamped at max). Required so prediction corrections work correctly.
 	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, Health,     COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, MaxHealth,  COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, Mana,       COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, MaxMana,    COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, Stamina,    COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
 	// Damage and Healing are meta attributes — intentionally NOT replicated.
 }
 
@@ -82,7 +74,7 @@ void UMyraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				EventData.EventMagnitude = LocalDamage;
 				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
 					ASC->GetAvatarActor(),
-					MyraGameplayTags::GameEvent_Death,
+					MyraGameplayTags::Myra_GameEvent_Death,
 					EventData);
 			}
 		}
@@ -101,10 +93,8 @@ void UMyraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 		}
 	}
 
-	// Final clamp for Health/Mana/Stamina after any change
-	SetHealth    (FMath::Clamp(GetHealth(),   0.f, GetMaxHealth()));
-	SetMana      (FMath::Clamp(GetMana(),     0.f, GetMaxMana()));
-	SetStamina   (FMath::Clamp(GetStamina(),  0.f, GetMaxStamina()));
+	// Final clamp for Health after any change.
+	SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
 }
 
 // ------------------------------------------------
@@ -119,26 +109,6 @@ void UMyraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldValue)
 void UMyraAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UMyraAttributeSet, MaxHealth, OldValue);
-}
-
-void UMyraAttributeSet::OnRep_Mana(const FGameplayAttributeData& OldValue)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UMyraAttributeSet, Mana, OldValue);
-}
-
-void UMyraAttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldValue)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UMyraAttributeSet, MaxMana, OldValue);
-}
-
-void UMyraAttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldValue)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UMyraAttributeSet, Stamina, OldValue);
-}
-
-void UMyraAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldValue)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UMyraAttributeSet, MaxStamina, OldValue);
 }
 
 // ------------------------------------------------
@@ -175,21 +145,5 @@ void UMyraAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, floa
 	else if (Attribute == GetMaxHealthAttribute())
 	{
 		NewValue = FMath::Max(NewValue, 1.f); // MaxHealth must always be at least 1
-	}
-	else if (Attribute == GetManaAttribute())
-	{
-		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxMana());
-	}
-	else if (Attribute == GetMaxManaAttribute())
-	{
-		NewValue = FMath::Max(NewValue, 0.f);
-	}
-	else if (Attribute == GetStaminaAttribute())
-	{
-		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxStamina());
-	}
-	else if (Attribute == GetMaxStaminaAttribute())
-	{
-		NewValue = FMath::Max(NewValue, 0.f);
 	}
 }

@@ -25,9 +25,8 @@
 /**
  * UMyraAttributeSet
  *
- * The base attribute set for Myra . Contains the most common RPG-style
- * attributes. Subclass this in your project to add custom attributes, or create
- * additional UAttributeSet subclasses for specialized systems (Combat, Movement, etc.)
+ * The base attribute set for Myra. It only defines health by default.
+ * Add project-specific attributes in your own UAttributeSet subclasses.
  *
  * HOW ATTRIBUTES WORK:
  *   - Each attribute has a "base" value and a "current" value.
@@ -73,38 +72,6 @@ public:
 	ATTRIBUTE_ACCESSORS(UMyraAttributeSet, MaxHealth)
 
 	// ------------------------------------------------
-	//  Mana
-	// ------------------------------------------------
-
-	/** Current Mana resource, used as ability cost. */
-	UPROPERTY(BlueprintReadOnly, Category = "Myra |Attributes|Mana",
-		ReplicatedUsing = OnRep_Mana)
-	FGameplayAttributeData Mana;
-	ATTRIBUTE_ACCESSORS(UMyraAttributeSet, Mana)
-
-	/** Maximum possible Mana. */
-	UPROPERTY(BlueprintReadOnly, Category = "Myra |Attributes|Mana",
-		ReplicatedUsing = OnRep_MaxMana)
-	FGameplayAttributeData MaxMana;
-	ATTRIBUTE_ACCESSORS(UMyraAttributeSet, MaxMana)
-
-	// ------------------------------------------------
-	//  Stamina
-	// ------------------------------------------------
-
-	/** Current Stamina, used for sprinting, dodging, etc. */
-	UPROPERTY(BlueprintReadOnly, Category = "Myra |Attributes|Stamina",
-		ReplicatedUsing = OnRep_Stamina)
-	FGameplayAttributeData Stamina;
-	ATTRIBUTE_ACCESSORS(UMyraAttributeSet, Stamina)
-
-	/** Maximum possible Stamina. */
-	UPROPERTY(BlueprintReadOnly, Category = "Myra |Attributes|Stamina",
-		ReplicatedUsing = OnRep_MaxStamina)
-	FGameplayAttributeData MaxStamina;
-	ATTRIBUTE_ACCESSORS(UMyraAttributeSet, MaxStamina)
-
-	// ------------------------------------------------
 	//  Damage / Healing (Meta Attributes)
 	// ------------------------------------------------
 
@@ -131,18 +98,6 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldValue);
-
-	UFUNCTION()
-	virtual void OnRep_Mana(const FGameplayAttributeData& OldValue);
-
-	UFUNCTION()
-	virtual void OnRep_MaxMana(const FGameplayAttributeData& OldValue);
-
-	UFUNCTION()
-	virtual void OnRep_Stamina(const FGameplayAttributeData& OldValue);
-
-	UFUNCTION()
-	virtual void OnRep_MaxStamina(const FGameplayAttributeData& OldValue);
 
 	/**
 	 * Clamp a current attribute to [0, MaxAttribute].

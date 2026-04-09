@@ -93,18 +93,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	float GetMaxHealth() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
-	float GetMana() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
-	float GetMaxMana() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
-	float GetStamina() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
-	float GetMaxStamina() const;
-
 	/** Normalized health [0..1]. Perfect for health bar UI. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	float GetHealthPercent() const;
@@ -153,6 +141,8 @@ public:
 	/**
 	 * Gameplay Effect applied on init to set starting attribute values.
 	 * Create a Blueprint GE of type "Instant" with modifiers that Override each attribute.
+	 * Use only one attribute initialization path for a given character:
+	 * this property, CharacterData, or an AbilitySet entry marked as initialization.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration")
 	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;

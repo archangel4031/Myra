@@ -48,6 +48,18 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
 	UMyraAttributeSet* GetBaseAttributeSet() const { return AttributeSet; }
 
+	/** Returns current health from the base attribute set. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetHealth() const;
+
+	/** Returns current max health from the base attribute set. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetMaxHealth() const;
+
+	/** Normalized health [0..1]. Perfect for health bar UI. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
+	float GetHealthPercent() const;
+
 	// ------------------------------------------------
 	//  Configuration (set these in your subclass defaults)
 	// ------------------------------------------------
@@ -81,9 +93,9 @@ protected:
 	TObjectPtr<UMyraAbilitySystemComponent> AbilitySystemComponent;
 
 	/**
-	 * The base attribute set (Health, Mana, Stamina).
-	 * Constructed automatically — do not replace this. Add extra attribute sets
-	 * via UMyraAbilitySet instead.
+	 * The base attribute set (Health).
+	 * Constructed automatically. Add project-specific attributes
+	 * through your own attribute sets via UMyraAbilitySet.
 	 */
 	UPROPERTY()
 	TObjectPtr<UMyraAttributeSet> AttributeSet;
