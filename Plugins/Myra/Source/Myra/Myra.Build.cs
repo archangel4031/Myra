@@ -33,7 +33,6 @@ public class Myra : ModuleRules
 				"GameplayTags",          // FGameplayTag, FGameplayTagContainer
 				"GameplayTasks",         // UGameplayTask used internally by GAS
 				"NetCore",               // Required on all platforms (fixes Mac link errors too)
-				"DeveloperSettings",
             }
 			);
 			
@@ -45,6 +44,7 @@ public class Myra : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "DeveloperSettings",
             }
 			);
 		

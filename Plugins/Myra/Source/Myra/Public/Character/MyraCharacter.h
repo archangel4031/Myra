@@ -47,6 +47,13 @@ public:
 	AMyraCharacter();
 
 	//~ Begin IAbilitySystemInterface
+	/**
+	 * Returns the Ability System Component associated with this character.
+	 * This is the standard implementation from IAbilitySystemInterface.
+	 * Most engine and GAS systems will call this function internally.
+	 *
+	 * @return The base UAbilitySystemComponent (may be nullptr if not initialized).
+	 */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	//~ End IAbilitySystemInterface
 
@@ -58,6 +65,18 @@ public:
 	//  Accessors
 	// ------------------------------------------------
 
+	/**
+	 * Returns the custom Myra Ability System Component for this character.
+	 *
+	 * This is a convenience function specific to the Myra plugin.
+	 * It returns the typed UMyraAbilitySystemComponent instead of the base class,
+	 * so you can directly access Myra-specific features without casting.
+	 *
+	 * Use this in your game code and Blueprints when working within the Myra framework.
+	 * Always check for nullptr in multiplayer or before the character is fully initialized.
+	 *
+	 * @return The UMyraAbilitySystemComponent owned by this character (or nullptr if none).
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
 	UMyraAbilitySystemComponent* GetMyraAbilitySystemComponent() const;
 
