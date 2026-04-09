@@ -76,6 +76,12 @@ Refer to the video for more information. (Video made for Plugin Ver 1.0.0)
 
 
 #### Changelog
+- Ver 2.0.0-alpha-2
+    - Fixed Gameplay Tags hierarchy. ALl native Tags start with Myra.*
+    - Base Attribute Set only contains Health. Example Data Assets provided for Mana, Stamina etc.
+    - Combat Attribute set is now only as a Data Asset. User must generate and compile manually
+    - Quailty of Code improvements
+    - Cleanup Script added for Fresh Compile
 - Ver 2.0.0-alpha
     - Project renamed to Myra.
     - Rewritten from scratch following Lyra Starter Game Best Practices.
