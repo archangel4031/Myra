@@ -33,7 +33,8 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 	GrantedAbilitySets.Add(AbilitySet);
 	AbilitySet->GiveToAbilitySystem(this, SourceObject,
 		GrantedAbilityHandles.FindOrAdd(AbilitySet),
-		GrantedEffectHandles.FindOrAdd(AbilitySet));
+		GrantedEffectHandles.FindOrAdd(AbilitySet),
+		GrantedAttributeSetHandles.FindOrAdd(AbilitySet));
 }
 
 void UMyraAbilitySystemComponent::RemoveAbilitySet(UMyraAbilitySet* AbilitySet)
@@ -61,6 +62,19 @@ void UMyraAbilitySystemComponent::RemoveAbilitySet(UMyraAbilitySet* AbilitySet)
 			RemoveActiveGameplayEffect(Handle);
 		}
 		GrantedEffectHandles.Remove(AbilitySet);
+	}
+
+	// Remove spawned attribute sets created by this ability set
+	if (TArray<TWeakObjectPtr<UAttributeSet>>* AttributeSetHandles = GrantedAttributeSetHandles.Find(AbilitySet))
+	{
+		for (const TWeakObjectPtr<UAttributeSet>& AttributeSetHandle : *AttributeSetHandles)
+		{
+			if (UAttributeSet* AttributeSet = AttributeSetHandle.Get())
+			{
+				RemoveSpawnedAttribute(AttributeSet);
+			}
+		}
+		GrantedAttributeSetHandles.Remove(AbilitySet);
 	}
 
 	GrantedAbilitySets.Remove(AbilitySet);

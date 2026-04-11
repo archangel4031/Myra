@@ -143,7 +143,8 @@ public:
 		UMyraAbilitySystemComponent* ASC,
 		UObject* SourceObject,
 		TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles,
-		TArray<FActiveGameplayEffectHandle>& OutEffectHandles) const;
+		TArray<FActiveGameplayEffectHandle>& OutEffectHandles,
+		TArray<TWeakObjectPtr<UAttributeSet>>& OutAttributeSetHandles) const;
 
 	// UPrimaryDataAsset interface
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;

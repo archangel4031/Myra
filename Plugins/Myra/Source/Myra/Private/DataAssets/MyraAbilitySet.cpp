@@ -14,7 +14,8 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 	UMyraAbilitySystemComponent* ASC,
 	UObject* SourceObject,
 	TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles,
-	TArray<FActiveGameplayEffectHandle>& OutEffectHandles) const
+	TArray<FActiveGameplayEffectHandle>& OutEffectHandles,
+	TArray<TWeakObjectPtr<UAttributeSet>>& OutAttributeSetHandles) const
 {
 	if (!ASC)
 	{
@@ -54,6 +55,7 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 
 		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), Entry.AttributeSetClass);
 		ASC->AddAttributeSetSubobject(NewSet);
+		OutAttributeSetHandles.Add(NewSet);
 	}
 
 	// ------------------------------------------

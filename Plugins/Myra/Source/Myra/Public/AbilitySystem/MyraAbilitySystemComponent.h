@@ -7,6 +7,7 @@
 
 class UMyraGameplayAbility;
 class UMyraAbilitySet;
+class UAttributeSet;
 
 /**
  * Delegate broadcast whenever any attribute changes on this ASC.
@@ -113,6 +114,7 @@ protected:
 	/** Handles returned when granting abilities from sets, keyed by AbilitySet pointer. */
 	TMap<const UMyraAbilitySet*, TArray<FGameplayAbilitySpecHandle>> GrantedAbilityHandles;
 	TMap<const UMyraAbilitySet*, TArray<FActiveGameplayEffectHandle>> GrantedEffectHandles;
+	TMap<const UMyraAbilitySet*, TArray<TWeakObjectPtr<UAttributeSet>>> GrantedAttributeSetHandles;
 
 	/** Tracks attribute init effect classes already applied so only one init path wins. */
 	TSet<const UClass*> AppliedInitializationEffectClasses;
