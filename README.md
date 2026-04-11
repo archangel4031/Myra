@@ -76,6 +76,9 @@ Refer to the video for more information. (Video made for Plugin Ver 1.0.0)
 
 
 #### Changelog
+- Ver 2.0.0-alpha-3
+    - Fixed Ability Set not Removing Attributes properly
+    - Update Wiki Pages
 - Ver 2.0.0-alpha-2
     - Fixed Gameplay Tags hierarchy. ALl native Tags start with Myra.*
     - Base Attribute Set only contains Health. Example Data Assets provided for Mana, Stamina etc.
