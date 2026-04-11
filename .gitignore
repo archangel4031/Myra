@@ -9,3 +9,5 @@ _docs/
 .vsconfig
 VisualStudioTools/
 /Content/*
+.qwen
+wiki
