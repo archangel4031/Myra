@@ -74,7 +74,7 @@ struct FMyraAbilitySet_GameplayEffect
 	/**
 	 * Mark true if this effect is your attribute initialization effect.
 	 * Myra will apply it through the guarded init path and skip duplicate applications
-	 * from Character or CharacterData setup.
+	 * from Character or PawnData setup.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	bool bTreatAsAttributeInitializationEffect = false;

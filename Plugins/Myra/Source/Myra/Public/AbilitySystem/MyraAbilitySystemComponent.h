@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayTagContainer.h"
 #include "MyraAbilitySystemComponent.generated.h"
 
 class UMyraGameplayAbility;
@@ -79,13 +80,21 @@ public:
 
 	/**
 	 * Apply an attribute initialization effect only once per ASC.
-	 * Use this for your one chosen initialization path: Character, CharacterData, or AbilitySet.
+	 * Use this for your one chosen initialization path: Character, PawnData, or AbilitySet.
 	 * Duplicate applications of the same effect class are skipped with a warning.
 	 */
 	FActiveGameplayEffectHandle ApplyInitializationEffectOnce(
 		TSubclassOf<UGameplayEffect> EffectClass,
 		float Level,
 		const UObject* SourceObject);
+
+	/** Forwards an input press tag to matching abilities and activates them if needed. */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+
+	/** Forwards an input release tag to any active matching abilities. */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
+	void AbilityInputTagReleased(FGameplayTag InputTag);
 
 	// ------------------------------------------------
 	//  Events

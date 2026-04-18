@@ -12,6 +12,7 @@ class UMyraAbilitySystemComponent;
 class UMyraAttributeSet;
 class UMyraAbilitySet;
 class UGameplayEffect;
+class UInputComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMyraOnDeath, AMyraCharacter*, DeadCharacter, AActor*, Killer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMyraOnHealthChanged, AMyraCharacter*, Character, float, OldValue, float, NewValue);
@@ -142,7 +143,7 @@ public:
 	 * Gameplay Effect applied on init to set starting attribute values.
 	 * Create a Blueprint GE of type "Instant" with modifiers that Override each attribute.
 	 * Use only one attribute initialization path for a given character:
-	 * this property, CharacterData, or an AbilitySet entry marked as initialization.
+	 * this property, PawnData, or an AbilitySet entry marked as initialization.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration")
 	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;
@@ -153,6 +154,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;       // Server
 	virtual void OnRep_PlayerState() override;                           // Client
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	//~ End AActor / ACharacter Interface
 
 	/**

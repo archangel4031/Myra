@@ -3,10 +3,12 @@
 #include "Character/MyraCharacter.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "AbilitySystem/MyraAttributeSet.h"
+#include "Character/MyraPawnExtensionComponent.h"
 #include "Character/MyraPlayerState.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "Tags/MyraNativeGameplayTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Components/InputComponent.h"
 #include "GameplayTagContainer.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -96,6 +98,17 @@ void AMyraCharacter::OnRep_PlayerState()
 	// Owned ASC path: already initialized on BeginPlay
 }
 
+void AMyraCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	{
+		PawnExtension->HandleControllerChanged();
+		PawnExtension->SetupPlayerInputComponent(PlayerInputComponent);
+	}
+}
+
 void AMyraCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -130,6 +143,12 @@ void AMyraCharacter::InitAbilitySystemForPlayerState()
 	// and which actor owns it (the PlayerState).
 	AbilitySystemComponentRef->InitAbilityActorInfo(MyraPlayerState, this);
 
+	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	{
+		PawnExtension->HandlePlayerStateReplicated();
+		PawnExtension->HandleAvatarSet();
+	}
+
 	OnAbilitySystemInitialized();
 }
 
@@ -154,6 +173,11 @@ void AMyraCharacter::InitAbilitySystemOwned()
 				AbilitySystemComponentRef->GrantAbilitySet(AbilitySet, this);
 			}
 		}
+	}
+
+	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	{
+		PawnExtension->HandleAvatarSet();
 	}
 
 	OnAbilitySystemInitialized();

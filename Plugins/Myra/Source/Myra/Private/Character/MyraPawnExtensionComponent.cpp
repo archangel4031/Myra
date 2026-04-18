@@ -2,15 +2,20 @@
 
 #include "Character/MyraPawnExtensionComponent.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
-#include "DataAssets/MyraCharacterData.h"
-#include "DataAssets/MyraAbilitySet.h"
-#include "Character/MyraCharacter.h"
+#include "AbilitySystemInterface.h"
+#include "Character/MyraInputComponent.h"
 #include "Character/MyraPlayerState.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/InputComponent.h"
+#include "DataAssets/MyraAbilitySet.h"
+#include "DataAssets/MyraPawnData.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "Engine/LocalPlayer.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 
 UMyraPawnExtensionComponent::UMyraPawnExtensionComponent()
 {
-	// This component needs BeginPlay but doesn't need per-frame ticking.
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(false);
 }
@@ -21,87 +26,118 @@ UMyraPawnExtensionComponent* UMyraPawnExtensionComponent::FindPawnExtensionCompo
 	{
 		return nullptr;
 	}
+
 	return Actor->FindComponentByClass<UMyraPawnExtensionComponent>();
 }
 
 void UMyraPawnExtensionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// For non-player-controlled pawns (AI), there's no PlayerState and no controller
-	// binding to wait for. Mark both as ready immediately.
-	const APawn* Pawn = Cast<APawn>(GetOwner());
-	if (Pawn && !Pawn->IsPlayerControlled())
-	{
-		bPlayerStateReady = true;
-		bControllerReady  = true;
-		// AvatarReady will be set when HandleAvatarSet is called.
-	}
 }
 
 void UMyraPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (UEnhancedInputComponent* InputComponent = CachedInputComponent.Get())
+	{
+		for (const uint32 BindingHandle : BoundInputHandles)
+		{
+			InputComponent->RemoveBindingByHandle(BindingHandle);
+		}
+	}
+
+	if (bInputMappingsApplied && PawnData)
+	{
+		if (APawn* Pawn = Cast<APawn>(GetOwner()))
+		{
+			if (APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController()))
+			{
+				if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+				{
+					if (UEnhancedInputLocalPlayerSubsystem* InputSubsystem =
+						LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+					{
+						for (const FMyraInputMappingContext& MappingEntry : PawnData->DefaultInputMappings)
+						{
+							if (MappingEntry.MappingContext)
+							{
+								InputSubsystem->RemoveMappingContext(MappingEntry.MappingContext);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	CachedInputComponent.Reset();
+	BoundInputHandles.Reset();
+
 	Super::EndPlay(EndPlayReason);
 }
 
-// ------------------------------------------------
-//  Readiness Condition Setters
-// ------------------------------------------------
-
 void UMyraPawnExtensionComponent::HandlePlayerStateReplicated()
 {
-	bPlayerStateReady = true;
 	CheckPawnReadyToInitialize();
+	TryInitializePlayerInput();
 }
 
 void UMyraPawnExtensionComponent::HandleAvatarSet()
 {
 	bAvatarReady = true;
 	CheckPawnReadyToInitialize();
+	TryInitializePlayerInput();
 }
 
 void UMyraPawnExtensionComponent::HandleControllerChanged()
 {
-	bControllerReady = true;
-	CheckPawnReadyToInitialize();
+	TryInitializePlayerInput();
 }
 
-// ------------------------------------------------
-//  Core Logic
-// ------------------------------------------------
+void UMyraPawnExtensionComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	if (CachedInputComponent.Get() != PlayerInputComponent)
+	{
+		if (UEnhancedInputComponent* ExistingInputComponent = CachedInputComponent.Get())
+		{
+			for (const uint32 BindingHandle : BoundInputHandles)
+			{
+				ExistingInputComponent->RemoveBindingByHandle(BindingHandle);
+			}
+		}
+
+		CachedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+		bAbilityInputBound = false;
+		BoundInputHandles.Reset();
+	}
+
+	TryInitializePlayerInput();
+}
 
 void UMyraPawnExtensionComponent::CheckPawnReadyToInitialize()
 {
-	// Already initialized — don't fire twice.
 	if (bPawnReadyToInitialize)
 	{
 		return;
 	}
 
-	// All three conditions must be met:
-	//   PlayerState: ASC owner is valid (multiplayer) or skipped (AI)
-	//   Avatar:      InitAbilityActorInfo has been called (avatar pointer valid)
-	//   Controller:  Pawn is possessed (ensures input binding works)
-	if (!bPlayerStateReady || !bAvatarReady || !bControllerReady)
+	if (!bAvatarReady || !GetMyraAbilitySystemComponent())
 	{
 		return;
 	}
 
 	bPawnReadyToInitialize = true;
 
-	// Apply CharacterData (ability sets, init GE, mesh, etc.) on authority.
-	ApplyCharacterData();
-
-	// Broadcast so the Character or any external listener can do final setup.
+	ApplyPawnData();
 	OnPawnReadyToInitialize.Broadcast();
+	TryInitializePlayerInput();
 
 	UE_LOG(LogTemp, Log, TEXT("MyraPawnExtensionComponent: %s is ready — Myra initialized."),
 		*GetOwner()->GetName());
 }
 
-void UMyraPawnExtensionComponent::ApplyCharacterData()
+void UMyraPawnExtensionComponent::ApplyPawnData()
 {
-	if (!CharacterData)
+	if (!PawnData)
 	{
 		return;
 	}
@@ -110,16 +146,14 @@ void UMyraPawnExtensionComponent::ApplyCharacterData()
 	if (!ASC)
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("MyraPawnExtensionComponent: ApplyCharacterData called but no ASC found on '%s'."),
+			TEXT("MyraPawnExtensionComponent: ApplyPawnData called but no ASC found on '%s'."),
 			*GetOwner()->GetName());
 		return;
 	}
 
-	// Only grant abilities on the server (they replicate to clients automatically).
 	if (GetOwner()->HasAuthority())
 	{
-		// Grant each AbilitySet in the CharacterData.
-		for (UMyraAbilitySet* AbilitySet : CharacterData->AbilitySets)
+		for (UMyraAbilitySet* AbilitySet : PawnData->AbilitySets)
 		{
 			if (AbilitySet)
 			{
@@ -127,65 +161,79 @@ void UMyraPawnExtensionComponent::ApplyCharacterData()
 			}
 		}
 
-		// Apply the default attribute init GE to set starting stat values.
-		if (CharacterData->DefaultAttributeInitEffect)
+		if (PawnData->DefaultAttributeInitEffect)
 		{
-			ASC->ApplyInitializationEffectOnce(CharacterData->DefaultAttributeInitEffect, 1.f, CharacterData);
-		}
-	}
-
-	// Apply mesh/anim data on all clients (cosmetic, no authority needed).
-	// Loaded synchronously here; for large projects use async loading (see TODO below).
-	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (Pawn)
-	{
-		USkeletalMeshComponent* MeshComp = Pawn->FindComponentByClass<USkeletalMeshComponent>();
-		if (MeshComp)
-		{
-			if (!CharacterData->CharacterMesh.IsNull())
-			{
-				// TODO: Use async asset loading (UAssetManager::GetStreamableManager().RequestAsyncLoad)
-				// for production. Synchronous load is fine for prototyping.
-				USkeletalMesh* Mesh = CharacterData->CharacterMesh.LoadSynchronous();
-				if (Mesh)
-				{
-					MeshComp->SetSkeletalMesh(Mesh);
-				}
-			}
-
-			if (!CharacterData->AnimationBlueprint.IsNull())
-			{
-				TSubclassOf<UAnimInstance> AnimClass = CharacterData->AnimationBlueprint.LoadSynchronous();
-				if (AnimClass)
-				{
-					MeshComp->SetAnimInstanceClass(AnimClass);
-				}
-			}
-		}
-
-		// Apply movement speeds if set.
-		if (ACharacter* Character = Cast<ACharacter>(Pawn))
-		{
-			UCharacterMovementComponent* MoveComp = Character->GetCharacterMovement();
-
-			// Ensure both the data and the component are valid before assignment
-			if (MoveComp && CharacterData && CharacterData->WalkSpeed > 0.f)
-			{
-				MoveComp->MaxWalkSpeed = CharacterData->WalkSpeed;
-			}
+			ASC->ApplyInitializationEffectOnce(PawnData->DefaultAttributeInitEffect, 1.f, PawnData);
 		}
 	}
 }
 
-UMyraAbilitySystemComponent* UMyraPawnExtensionComponent::GetMyraAbilitySystemComponent() const
+void UMyraPawnExtensionComponent::TryInitializePlayerInput()
 {
-	// Try the Character-based accessor first.
-	if (const AMyraCharacter* MyraChar = Cast<AMyraCharacter>(GetOwner()))
+	if (!bPawnReadyToInitialize || bAbilityInputBound)
 	{
-		return MyraChar->GetMyraAbilitySystemComponent();
+		return;
 	}
 
-	// Fallback: look on the PlayerState.
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	if (!Pawn || !Pawn->IsLocallyControlled() || !PawnData)
+	{
+		return;
+	}
+
+	APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController());
+	if (!PlayerController)
+	{
+		return;
+	}
+
+	ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
+	if (!LocalPlayer)
+	{
+		return;
+	}
+
+	if (!bInputMappingsApplied)
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* InputSubsystem =
+			LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		{
+			for (const FMyraInputMappingContext& MappingEntry : PawnData->DefaultInputMappings)
+			{
+				if (MappingEntry.MappingContext)
+				{
+					InputSubsystem->AddMappingContext(MappingEntry.MappingContext, MappingEntry.Priority);
+				}
+			}
+
+			bInputMappingsApplied = true;
+		}
+	}
+
+	if (!PawnData->InputConfig)
+	{
+		bAbilityInputBound = true;
+		return;
+	}
+
+	UEnhancedInputComponent* InputComponent = CachedInputComponent.Get();
+	UMyraAbilitySystemComponent* ASC = GetMyraAbilitySystemComponent();
+	if (!InputComponent || !ASC)
+	{
+		return;
+	}
+
+	UMyraInputComponent::BindAbilityActions(InputComponent, PawnData->InputConfig, ASC, BoundInputHandles);
+	bAbilityInputBound = true;
+}
+
+UMyraAbilitySystemComponent* UMyraPawnExtensionComponent::GetMyraAbilitySystemComponent() const
+{
+	if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	{
+		return Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
+	}
+
 	if (const APawn* Pawn = Cast<APawn>(GetOwner()))
 	{
 		if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())

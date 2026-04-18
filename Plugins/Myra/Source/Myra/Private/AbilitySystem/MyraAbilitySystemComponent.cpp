@@ -148,6 +148,54 @@ FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyInitializationEffe
 	return Handle;
 }
 
+void UMyraAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	if (!InputTag.IsValid())
+	{
+		return;
+	}
+
+	TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		if (!AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			continue;
+		}
+
+		AbilitySpecInputPressed(AbilitySpec);
+
+		if (!AbilitySpec.IsActive())
+		{
+			AbilitiesToActivate.AddUnique(AbilitySpec.Handle);
+		}
+	}
+
+	for (const FGameplayAbilitySpecHandle& AbilityHandle : AbilitiesToActivate)
+	{
+		TryActivateAbility(AbilityHandle);
+	}
+}
+
+void UMyraAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if (!InputTag.IsValid())
+	{
+		return;
+	}
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		if (!AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag) || !AbilitySpec.IsActive())
+		{
+			continue;
+		}
+
+		AbilitySpecInputReleased(AbilitySpec);
+	}
+}
+
 // ------------------------------------------------
 //  Attribute Change Broadcasting
 //  NotifyAttributeChanged is called by UGASAttributeSet::PostAttributeChange,
