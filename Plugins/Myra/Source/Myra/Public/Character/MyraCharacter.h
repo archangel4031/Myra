@@ -126,7 +126,8 @@ public:
 
 	/**
 	 * If true (default), the ASC is taken from the PlayerState.
-	 * Set false for AI or single-player characters that own their own ASC.
+	 * Set false to skip PlayerState logic and keep the ASC directly on this Character.
+	 * If true but no compatible Myra PlayerState is available, Myra falls back to the Character ASC.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Configuration")
 	bool bUsePlayerStateASC = true;
@@ -140,7 +141,8 @@ public:
 	TArray<TObjectPtr<UMyraAbilitySet>> DefaultAbilitySets;
 
 	/**
-	 * Gameplay Effect applied on init to set starting attribute values.
+	 * Gameplay Effect applied on init to set starting attribute values when this Character
+	 * owns the active ASC.
 	 * Create a Blueprint GE of type "Instant" with modifiers that Override each attribute.
 	 * Use only one attribute initialization path for a given character:
 	 * this property, PawnData, or an AbilitySet entry marked as initialization.
@@ -153,7 +155,9 @@ protected:
 	//~ Begin AActor / ACharacter Interface
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;       // Server
+	virtual void UnPossessed() override;                                 // Server
 	virtual void OnRep_PlayerState() override;                           // Client
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	//~ End AActor / ACharacter Interface
 
@@ -170,23 +174,27 @@ protected:
 
 private:
 
-	// The ASC pointer — either points to PlayerState's ASC or to the owned one below.
-	UPROPERTY()
-	TObjectPtr<UMyraAbilitySystemComponent> AbilitySystemComponentRef;
+	// The currently active ASC for this pawn. Exposed so Character Blueprints can always reach it.
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Myra |Components",
+		meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UMyraAbilitySystemComponent> ResolvedAbilitySystemComponent;
 
-	// Owned ASC — only created when bUsePlayerStateASC = false.
+	// Owned ASC — created up front for beginner-friendly BP access, but only used as the active ASC
+	// when bUsePlayerStateASC is false or when Myra falls back to Character-owned initialization.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myra |Components",
 		meta = (AllowPrivateAccess = "true", EditCondition = "!bUsePlayerStateASC"))
 	TObjectPtr<UMyraAbilitySystemComponent> OwnedAbilitySystemComponent;
 
-	// Owned base attribute set — only created when bUsePlayerStateASC = false.
+	// Owned base attribute set paired with the Character-owned ASC.
 	UPROPERTY()
 	TObjectPtr<UMyraAttributeSet> OwnedAttributeSet;
 
-	void InitAbilitySystemForPlayerState();
+	bool InitAbilitySystemForPlayerState();
 	void InitAbilitySystemOwned();
+	void HandlePlayerStateAbilitySystemRemoved();
 	void BindAttributeChangeCallbacks();
 	void ApplyDefaultAttributeInitEffect();
+	bool IsUsingPlayerStateAbilitySystem() const;
 
 	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
 	void HandleDeathTag(const FGameplayTag GameplayTag, int32 NewCount);

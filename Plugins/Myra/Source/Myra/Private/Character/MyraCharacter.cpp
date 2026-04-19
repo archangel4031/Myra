@@ -16,13 +16,8 @@
 
 AMyraCharacter::AMyraCharacter()
 {
-	// When using PlayerState ASC, we don't create components here.
-	// When bUsePlayerStateASC = false, we create them in the constructor.
-	// However, we defer reading bUsePlayerStateASC to BeginPlay/PossessedBy
-	// because CDO defaults may not reflect the final subclass value here.
-
-	// AI / single-player characters always create their own ASC.
-	// This is created unconditionally but only used when bUsePlayerStateASC = false.
+	// Keep an owned ASC on the Character for the beginner-friendly path and as a fallback
+	// when PlayerState setup is intentionally skipped or unavailable.
 	OwnedAbilitySystemComponent = CreateDefaultSubobject<UMyraAbilitySystemComponent>(
 		TEXT("OwnedAbilitySystemComponent"));
 	OwnedAbilitySystemComponent->SetIsReplicated(true);
@@ -41,14 +36,14 @@ UAbilitySystemComponent* AMyraCharacter::GetAbilitySystemComponent() const
 
 UMyraAbilitySystemComponent* AMyraCharacter::GetMyraAbilitySystemComponent() const
 {
-	return AbilitySystemComponentRef;
+	return ResolvedAbilitySystemComponent;
 }
 
 const UMyraAttributeSet* AMyraCharacter::GetBaseAttributeSet() const
 {
-	if (AbilitySystemComponentRef)
+	if (ResolvedAbilitySystemComponent)
 	{
-		return AbilitySystemComponentRef->GetSet<UMyraAttributeSet>();
+		return ResolvedAbilitySystemComponent->GetSet<UMyraAttributeSet>();
 	}
 	return nullptr;
 }
@@ -59,9 +54,9 @@ const UMyraAttributeSet* AMyraCharacter::GetBaseAttributeSet() const
 
 void AMyraCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
-	if (AbilitySystemComponentRef)
+	if (ResolvedAbilitySystemComponent)
 	{
-		AbilitySystemComponentRef->GetOwnedGameplayTags(TagContainer);
+		ResolvedAbilitySystemComponent->GetOwnedGameplayTags(TagContainer);
 	}
 }
 
@@ -73,14 +68,22 @@ void AMyraCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (bUsePlayerStateASC)
+	if (bUsePlayerStateASC && InitAbilitySystemForPlayerState())
 	{
-		InitAbilitySystemForPlayerState();
+		return;
 	}
-	else
+
+	InitAbilitySystemOwned();
+}
+
+void AMyraCharacter::UnPossessed()
+{
+	if (IsUsingPlayerStateAbilitySystem())
 	{
-		InitAbilitySystemOwned();
+		HandlePlayerStateAbilitySystemRemoved();
 	}
+
+	Super::UnPossessed();
 }
 
 // ------------------------------------------------
@@ -91,11 +94,16 @@ void AMyraCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	if (bUsePlayerStateASC)
+	if (bUsePlayerStateASC && InitAbilitySystemForPlayerState())
 	{
-		InitAbilitySystemForPlayerState();
+		return;
 	}
-	// Owned ASC path: already initialized on BeginPlay
+
+	// Fallback to the Character ASC when PlayerState setup is unavailable.
+	if (!bAbilitySystemInitialized)
+	{
+		InitAbilitySystemOwned();
+	}
 }
 
 void AMyraCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -121,27 +129,39 @@ void AMyraCharacter::BeginPlay()
 	}
 }
 
+void AMyraCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (IsUsingPlayerStateAbilitySystem())
+	{
+		HandlePlayerStateAbilitySystemRemoved();
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 // ------------------------------------------------
 //  ASC Initialization — PlayerState path
 // ------------------------------------------------
 
-void AMyraCharacter::InitAbilitySystemForPlayerState()
+bool AMyraCharacter::InitAbilitySystemForPlayerState()
 {
 	AMyraPlayerState* MyraPlayerState = GetPlayerState<AMyraPlayerState>();
 	if (!MyraPlayerState)
 	{
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("====> AMyraCharacter::InitAbilitySystemForPlayerState: No PlayerState found for %s"), *GetName());
+		return false;
 	}
 
-	AbilitySystemComponentRef = MyraPlayerState->GetMyraAbilitySystemComponent();
-	if (!AbilitySystemComponentRef)
+	ResolvedAbilitySystemComponent = MyraPlayerState->GetMyraAbilitySystemComponent();
+	if (!ResolvedAbilitySystemComponent)
 	{
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("====> AMyraCharacter::InitAbilitySystemForPlayerState: PlayerState %s does not have an AbilitySystemComponent"), *MyraPlayerState->GetName());
+		return false;
 	}
 
 	// Tell the ASC which actor is its "avatar" (the physical Character)
 	// and which actor owns it (the PlayerState).
-	AbilitySystemComponentRef->InitAbilityActorInfo(MyraPlayerState, this);
+	ResolvedAbilitySystemComponent->InitAbilityActorInfo(MyraPlayerState, this);
 
 	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
 	{
@@ -150,6 +170,7 @@ void AMyraCharacter::InitAbilitySystemForPlayerState()
 	}
 
 	OnAbilitySystemInitialized();
+	return true;
 }
 
 // ------------------------------------------------
@@ -158,10 +179,10 @@ void AMyraCharacter::InitAbilitySystemForPlayerState()
 
 void AMyraCharacter::InitAbilitySystemOwned()
 {
-	AbilitySystemComponentRef = OwnedAbilitySystemComponent;
+	ResolvedAbilitySystemComponent = OwnedAbilitySystemComponent;
 
 	// For owned ASC, owner and avatar are both the Character.
-	AbilitySystemComponentRef->InitAbilityActorInfo(this, this);
+	ResolvedAbilitySystemComponent->InitAbilityActorInfo(this, this);
 
 	// Grant ability sets on the server only.
 	if (GetLocalRole() == ROLE_Authority)
@@ -170,7 +191,7 @@ void AMyraCharacter::InitAbilitySystemOwned()
 		{
 			if (AbilitySet)
 			{
-				AbilitySystemComponentRef->GrantAbilitySet(AbilitySet, this);
+				ResolvedAbilitySystemComponent->GrantAbilitySet(AbilitySet, this);
 			}
 		}
 	}
@@ -181,6 +202,17 @@ void AMyraCharacter::InitAbilitySystemOwned()
 	}
 
 	OnAbilitySystemInitialized();
+}
+
+void AMyraCharacter::HandlePlayerStateAbilitySystemRemoved()
+{
+	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	{
+		PawnExtension->HandlePawnUninitialized();
+	}
+
+	ResolvedAbilitySystemComponent = nullptr;
+	bAbilitySystemInitialized = false;
 }
 
 // ------------------------------------------------
@@ -207,29 +239,47 @@ void AMyraCharacter::OnAbilitySystemInitialized()
 
 void AMyraCharacter::ApplyDefaultAttributeInitEffect()
 {
-	if (DefaultAttributeInitEffect && AbilitySystemComponentRef)
+	if (!IsUsingPlayerStateAbilitySystem() && DefaultAttributeInitEffect && ResolvedAbilitySystemComponent)
 	{
-		AbilitySystemComponentRef->ApplyInitializationEffectOnce(DefaultAttributeInitEffect, 1.f, this);
+		ResolvedAbilitySystemComponent->ApplyInitializationEffectOnce(DefaultAttributeInitEffect, 1.f, this);
 	}
 }
 
 void AMyraCharacter::BindAttributeChangeCallbacks()
 {
-	if (!AbilitySystemComponentRef)
+	if (!ResolvedAbilitySystemComponent)
 	{
 		return;
 	}
 
 	// Bind to Health changes to broadcast our Blueprint delegate and handle death.
-	AbilitySystemComponentRef->GetGameplayAttributeValueChangeDelegate(
+	ResolvedAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+		UMyraAttributeSet::GetHealthAttribute())
+		.RemoveAll(this);
+	ResolvedAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		UMyraAttributeSet::GetHealthAttribute())
 		.AddUObject(this, &AMyraCharacter::HandleHealthChanged);
 
 	// Listen for the Death gameplay tag being added (set by the attribute set).
-	AbilitySystemComponentRef->RegisterGameplayTagEvent(
+	ResolvedAbilitySystemComponent->RegisterGameplayTagEvent(
+		MyraGameplayTags::Myra_State_Dead,
+		EGameplayTagEventType::NewOrRemoved)
+		.RemoveAll(this);
+	ResolvedAbilitySystemComponent->RegisterGameplayTagEvent(
 		MyraGameplayTags::Myra_State_Dead,
 		EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AMyraCharacter::HandleDeathTag);
+}
+
+bool AMyraCharacter::IsUsingPlayerStateAbilitySystem() const
+{
+	if (!bUsePlayerStateASC || !ResolvedAbilitySystemComponent)
+	{
+		return false;
+	}
+
+	const AMyraPlayerState* MyraPlayerState = GetPlayerState<AMyraPlayerState>();
+	return MyraPlayerState && ResolvedAbilitySystemComponent == MyraPlayerState->GetMyraAbilitySystemComponent();
 }
 
 // ------------------------------------------------
@@ -291,6 +341,14 @@ void AMyraCharacter::HandleDeathTag(const FGameplayTag GameplayTag, int32 NewCou
 void AMyraCharacter::OnDeath_Implementation(AActor* Killer)
 {
 	OnDeathEvent.Broadcast(this, Killer);
+
+	if (IsUsingPlayerStateAbilitySystem())
+	{
+		if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+		{
+			PawnExtension->HandlePawnUninitialized();
+		}
+	}
 
 	// Default behaviour: disable collision and stop all movement.
 	// Override in your subclass to play death animations, ragdoll, etc.

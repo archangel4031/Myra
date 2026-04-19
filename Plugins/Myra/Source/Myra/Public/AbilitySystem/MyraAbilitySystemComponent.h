@@ -88,6 +88,9 @@ public:
 		float Level,
 		const UObject* SourceObject);
 
+	/** Removes a tracked gameplay effect and releases any Myra init-effect tracking attached to it. */
+	void RemoveTrackedGameplayEffect(const FActiveGameplayEffectHandle& EffectHandle);
+
 	/** Forwards an input press tag to matching abilities and activates them if needed. */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
 	void AbilityInputTagPressed(FGameplayTag InputTag);
@@ -125,6 +128,6 @@ protected:
 	TMap<const UMyraAbilitySet*, TArray<FActiveGameplayEffectHandle>> GrantedEffectHandles;
 	TMap<const UMyraAbilitySet*, TArray<TWeakObjectPtr<UAttributeSet>>> GrantedAttributeSetHandles;
 
-	/** Tracks attribute init effect classes already applied so only one init path wins. */
-	TSet<const UClass*> AppliedInitializationEffectClasses;
+	/** Tracks init effects by handle so pawn-scoped init effects can be removed and re-applied later. */
+	TMap<FActiveGameplayEffectHandle, const UClass*> AppliedInitializationEffects;
 };

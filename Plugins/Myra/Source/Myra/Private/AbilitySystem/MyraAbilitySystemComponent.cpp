@@ -59,7 +59,7 @@ void UMyraAbilitySystemComponent::RemoveAbilitySet(UMyraAbilitySet* AbilitySet)
 	{
 		for (const FActiveGameplayEffectHandle& Handle : *EffectHandles)
 		{
-			RemoveActiveGameplayEffect(Handle);
+			RemoveTrackedGameplayEffect(Handle);
 		}
 		GrantedEffectHandles.Remove(AbilitySet);
 	}
@@ -127,25 +127,39 @@ FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyInitializationEffe
 	}
 
 	const UClass* EffectClassPtr = EffectClass.Get();
-	if (AppliedInitializationEffectClasses.Contains(EffectClassPtr))
+	for (const TPair<FActiveGameplayEffectHandle, const UClass*>& AppliedEffectPair : AppliedInitializationEffects)
 	{
-		UE_LOG(
-			LogTemp,
-			Warning,
-			TEXT("Myra: Skipping duplicate attribute initialization effect '%s' on ASC '%s' from '%s'. Use only one initialization path for a given init effect."),
-			*GetNameSafe(EffectClassPtr),
-			*GetNameSafe(GetOwner()),
-			*GetNameSafe(SourceObject));
-		return FActiveGameplayEffectHandle();
+		if (AppliedEffectPair.Value == EffectClassPtr)
+		{
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("Myra: Skipping duplicate attribute initialization effect '%s' on ASC '%s' from '%s'. Use only one initialization path for a given init effect."),
+				*GetNameSafe(EffectClassPtr),
+				*GetNameSafe(GetOwner()),
+				*GetNameSafe(SourceObject));
+			return FActiveGameplayEffectHandle();
+		}
 	}
 
 	const FActiveGameplayEffectHandle Handle = ApplyEffectToSelf(EffectClass, Level);
 	if (Handle.IsValid())
 	{
-		AppliedInitializationEffectClasses.Add(EffectClassPtr);
+		AppliedInitializationEffects.Add(Handle, EffectClassPtr);
 	}
 
 	return Handle;
+}
+
+void UMyraAbilitySystemComponent::RemoveTrackedGameplayEffect(const FActiveGameplayEffectHandle& EffectHandle)
+{
+	if (!EffectHandle.IsValid())
+	{
+		return;
+	}
+
+	RemoveActiveGameplayEffect(EffectHandle);
+	AppliedInitializationEffects.Remove(EffectHandle);
 }
 
 void UMyraAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)

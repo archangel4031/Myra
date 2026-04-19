@@ -8,6 +8,7 @@
 #include "Components/InputComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "DataAssets/MyraPawnData.h"
+#include "AttributeSet.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
@@ -37,40 +38,7 @@ void UMyraPawnExtensionComponent::BeginPlay()
 
 void UMyraPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UEnhancedInputComponent* InputComponent = CachedInputComponent.Get())
-	{
-		for (const uint32 BindingHandle : BoundInputHandles)
-		{
-			InputComponent->RemoveBindingByHandle(BindingHandle);
-		}
-	}
-
-	if (bInputMappingsApplied && PawnData)
-	{
-		if (APawn* Pawn = Cast<APawn>(GetOwner()))
-		{
-			if (APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController()))
-			{
-				if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
-				{
-					if (UEnhancedInputLocalPlayerSubsystem* InputSubsystem =
-						LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-					{
-						for (const FMyraInputMappingContext& MappingEntry : PawnData->DefaultInputMappings)
-						{
-							if (MappingEntry.MappingContext)
-							{
-								InputSubsystem->RemoveMappingContext(MappingEntry.MappingContext);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	CachedInputComponent.Reset();
-	BoundInputHandles.Reset();
+	HandlePawnUninitialized();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -93,17 +61,26 @@ void UMyraPawnExtensionComponent::HandleControllerChanged()
 	TryInitializePlayerInput();
 }
 
+void UMyraPawnExtensionComponent::HandlePawnUninitialized()
+{
+	RemovePawnData();
+	RemoveInputBindings();
+	RemoveInputMappings();
+
+	bPawnReadyToInitialize = false;
+	bAvatarReady = false;
+	bInputMappingsApplied = false;
+	bAbilityInputBound = false;
+
+	CachedInputComponent.Reset();
+	BoundInputHandles.Reset();
+}
+
 void UMyraPawnExtensionComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	if (CachedInputComponent.Get() != PlayerInputComponent)
 	{
-		if (UEnhancedInputComponent* ExistingInputComponent = CachedInputComponent.Get())
-		{
-			for (const uint32 BindingHandle : BoundInputHandles)
-			{
-				ExistingInputComponent->RemoveBindingByHandle(BindingHandle);
-			}
-		}
+		RemoveInputBindings();
 
 		CachedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 		bAbilityInputBound = false;
@@ -137,7 +114,7 @@ void UMyraPawnExtensionComponent::CheckPawnReadyToInitialize()
 
 void UMyraPawnExtensionComponent::ApplyPawnData()
 {
-	if (!PawnData)
+	if (!PawnData || bPawnDataApplied)
 	{
 		return;
 	}
@@ -157,13 +134,103 @@ void UMyraPawnExtensionComponent::ApplyPawnData()
 		{
 			if (AbilitySet)
 			{
-				ASC->GrantAbilitySet(AbilitySet, GetOwner());
+				AbilitySet->GiveToAbilitySystem(
+					ASC,
+					GetOwner(),
+					AppliedPawnDataAbilityHandles,
+					AppliedPawnDataEffectHandles,
+					AppliedPawnDataAttributeSetHandles);
 			}
 		}
 
 		if (PawnData->DefaultAttributeInitEffect)
 		{
-			ASC->ApplyInitializationEffectOnce(PawnData->DefaultAttributeInitEffect, 1.f, PawnData);
+			const FActiveGameplayEffectHandle InitEffectHandle =
+				ASC->ApplyInitializationEffectOnce(PawnData->DefaultAttributeInitEffect, 1.f, PawnData);
+			if (InitEffectHandle.IsValid())
+			{
+				AppliedPawnDataEffectHandles.Add(InitEffectHandle);
+			}
+		}
+
+		bPawnDataApplied = true;
+	}
+}
+
+void UMyraPawnExtensionComponent::RemovePawnData()
+{
+	if (!bPawnDataApplied)
+	{
+		return;
+	}
+
+	UMyraAbilitySystemComponent* ASC = GetMyraAbilitySystemComponent();
+	if (ASC && GetOwner()->HasAuthority())
+	{
+		for (const FGameplayAbilitySpecHandle& AbilityHandle : AppliedPawnDataAbilityHandles)
+		{
+			if (AbilityHandle.IsValid())
+			{
+				ASC->ClearAbility(AbilityHandle);
+			}
+		}
+
+		for (const FActiveGameplayEffectHandle& EffectHandle : AppliedPawnDataEffectHandles)
+		{
+			ASC->RemoveTrackedGameplayEffect(EffectHandle);
+		}
+
+		for (const TWeakObjectPtr<UAttributeSet>& AttributeSetHandle : AppliedPawnDataAttributeSetHandles)
+		{
+			if (UAttributeSet* AttributeSet = AttributeSetHandle.Get())
+			{
+				ASC->RemoveSpawnedAttribute(AttributeSet);
+			}
+		}
+	}
+
+	AppliedPawnDataAbilityHandles.Reset();
+	AppliedPawnDataEffectHandles.Reset();
+	AppliedPawnDataAttributeSetHandles.Reset();
+	bPawnDataApplied = false;
+}
+
+void UMyraPawnExtensionComponent::RemoveInputBindings()
+{
+	if (UEnhancedInputComponent* InputComponent = CachedInputComponent.Get())
+	{
+		for (const uint32 BindingHandle : BoundInputHandles)
+		{
+			InputComponent->RemoveBindingByHandle(BindingHandle);
+		}
+	}
+}
+
+void UMyraPawnExtensionComponent::RemoveInputMappings()
+{
+	if (!bInputMappingsApplied || !PawnData)
+	{
+		return;
+	}
+
+	if (APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController()))
+		{
+			if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+			{
+				if (UEnhancedInputLocalPlayerSubsystem* InputSubsystem =
+					LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+				{
+					for (const FMyraInputMappingContext& MappingEntry : PawnData->DefaultInputMappings)
+					{
+						if (MappingEntry.MappingContext)
+						{
+							InputSubsystem->RemoveMappingContext(MappingEntry.MappingContext);
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -229,18 +296,24 @@ void UMyraPawnExtensionComponent::TryInitializePlayerInput()
 
 UMyraAbilitySystemComponent* UMyraPawnExtensionComponent::GetMyraAbilitySystemComponent() const
 {
-	if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
-	{
-		return Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
-	}
-
 	if (const APawn* Pawn = Cast<APawn>(GetOwner()))
 	{
 		if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
 		{
+			UE_LOG(LogTemp, Verbose, TEXT("====> MyraPawnExtensionComponent: Found Myra ASC on PlayerState '%s'."), *PS->GetName());
 			return PS->GetMyraAbilitySystemComponent();
 		}
 	}
+
+	if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	{
+		if (UMyraAbilitySystemComponent* ASC =
+			Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent()))
+		{
+			UE_LOG(LogTemp, Verbose, TEXT("====> MyraPawnExtensionComponent: Found Myra ASC on Pawn '%s'."), *GetOwner()->GetName());
+			return ASC;
+		}
+	}	
 
 	return nullptr;
 }

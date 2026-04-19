@@ -2,9 +2,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "Components/ActorComponent.h"
+#include "GameplayAbilitySpec.h"
 #include "MyraPawnExtensionComponent.generated.h"
 
+class UAttributeSet;
 class UEnhancedInputComponent;
 class UInputComponent;
 class UMyraAbilitySystemComponent;
@@ -50,6 +53,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Myra |Pawn")
 	void HandleControllerChanged();
 
+	/** Removes pawn-scoped grants and input state so the pawn can be cleanly re-initialized later. */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Pawn")
+	void HandlePawnUninitialized();
+
 	/** Call this from SetupPlayerInputComponent so Myra can auto-bind ability input. */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Pawn")
 	void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent);
@@ -74,13 +81,20 @@ private:
 
 	void CheckPawnReadyToInitialize();
 	void ApplyPawnData();
+	void RemovePawnData();
+	void RemoveInputBindings();
+	void RemoveInputMappings();
 	void TryInitializePlayerInput();
 
 	bool bPawnReadyToInitialize = false;
 	bool bAvatarReady = false;
 	bool bInputMappingsApplied = false;
 	bool bAbilityInputBound = false;
+	bool bPawnDataApplied = false;
 
 	TWeakObjectPtr<UEnhancedInputComponent> CachedInputComponent;
 	TArray<uint32> BoundInputHandles;
+	TArray<FGameplayAbilitySpecHandle> AppliedPawnDataAbilityHandles;
+	TArray<FActiveGameplayEffectHandle> AppliedPawnDataEffectHandles;
+	TArray<TWeakObjectPtr<UAttributeSet>> AppliedPawnDataAttributeSetHandles;
 };
