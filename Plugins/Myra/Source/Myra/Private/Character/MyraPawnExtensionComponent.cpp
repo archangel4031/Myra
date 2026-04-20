@@ -5,6 +5,7 @@
 #include "AbilitySystemInterface.h"
 #include "Character/MyraInputComponent.h"
 #include "Character/MyraPlayerState.h"
+#include "Character/MyraCharacter.h"
 #include "Components/InputComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "DataAssets/MyraPawnData.h"
@@ -107,9 +108,6 @@ void UMyraPawnExtensionComponent::CheckPawnReadyToInitialize()
 	ApplyPawnData();
 	OnPawnReadyToInitialize.Broadcast();
 	TryInitializePlayerInput();
-
-	UE_LOG(LogTemp, Log, TEXT("MyraPawnExtensionComponent: %s is ready — Myra initialized."),
-		*GetOwner()->GetName());
 }
 
 void UMyraPawnExtensionComponent::ApplyPawnData()
@@ -122,9 +120,6 @@ void UMyraPawnExtensionComponent::ApplyPawnData()
 	UMyraAbilitySystemComponent* ASC = GetMyraAbilitySystemComponent();
 	if (!ASC)
 	{
-		UE_LOG(LogTemp, Warning,
-			TEXT("MyraPawnExtensionComponent: ApplyPawnData called but no ASC found on '%s'."),
-			*GetOwner()->GetName());
 		return;
 	}
 
@@ -296,24 +291,47 @@ void UMyraPawnExtensionComponent::TryInitializePlayerInput()
 
 UMyraAbilitySystemComponent* UMyraPawnExtensionComponent::GetMyraAbilitySystemComponent() const
 {
+	//CLADUE: 
 	if (const APawn* Pawn = Cast<APawn>(GetOwner()))
 	{
-		if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
+		// Only check the PlayerState ASC if the Character actually wants to use it
+		if (const AMyraCharacter* MyraChar = Cast<AMyraCharacter>(Pawn))
 		{
-			UE_LOG(LogTemp, Verbose, TEXT("====> MyraPawnExtensionComponent: Found Myra ASC on PlayerState '%s'."), *PS->GetName());
-			return PS->GetMyraAbilitySystemComponent();
+			if (MyraChar->bUsePlayerStateASC)
+			{
+				if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
+				{
+					return PS->GetMyraAbilitySystemComponent();
+				}
+			}
 		}
 	}
 
-	if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	// Fall back to whatever the pawn itself exposes via the interface
+	if (const IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(GetOwner()))
 	{
-		if (UMyraAbilitySystemComponent* ASC =
-			Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent()))
-		{
-			UE_LOG(LogTemp, Verbose, TEXT("====> MyraPawnExtensionComponent: Found Myra ASC on Pawn '%s'."), *GetOwner()->GetName());
-			return ASC;
-		}
-	}	
+		return Cast<UMyraAbilitySystemComponent>(ASI->GetAbilitySystemComponent());
+	}
 
 	return nullptr;
+
+	// Replaced by above code
+	//if (const APawn* Pawn = Cast<APawn>(GetOwner()))
+	//{
+	//	if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
+	//	{
+	//		return PS->GetMyraAbilitySystemComponent();
+	//	}
+	//}
+
+	//if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	//{
+	//	if (UMyraAbilitySystemComponent* ASC =
+	//		Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent()))
+	//	{
+	//		return ASC;
+	//	}
+	//}	
+
+	//return nullptr;
 }

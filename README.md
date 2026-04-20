@@ -1,3 +1,10 @@
+<p align="center">
+<img src="https://i.ibb.co/sX88kgy/Art-World-Logo-T.png" alt="Art World Logo" width="25%">
+</p>
+
+---
+
+
 # Myra (formerly GAS Associate)
 
 [![Discord](https://img.shields.io/discord/820665024137789472?label=discord&style=for-the-badge)](https://discord.gg/nfkTafPJKK)
@@ -7,6 +14,8 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra)
 [![GitHub forks](https://img.shields.io/github/forks/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/network/members)
 [![GitHub Repo stars](https://img.shields.io/github/stars/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/stargazers)
+[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3DArtWorldbyMalikSahab%26type%3Dpatrons&style=for-the-badge&color=black)](https://patreon.com/ArtWorldbyMalikSahab)
+
 
 ---
 Myra is the next iteration of GAS Associate. Inspired by the Lyra Starter Project, Myra is a smaller version of Lyra (Mini-Lyra or Myra) that is easier to use. Myra tries to implement best practices from Lyra while keeping it simple and easy to use for beginners. 
@@ -76,6 +85,11 @@ Refer to the video for more information. (Video made for Plugin Ver 1.0.0)
 
 
 #### Changelog
+- Ver 2.0.0-alpha-4
+    - Abilities now bind to input via Tags automatically
+    - Replaced Character Data with more generic Pawn Data
+    - Pawn Extension Component uses Pawn Data to grant Ability Set, Input Config etc.
+    - Added Sample InputConfig Data Asset
 - Ver 2.0.0-alpha-3
     - Fixed Ability Set not Removing Attributes properly
     - Update Wiki Pages

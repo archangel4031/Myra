@@ -51,11 +51,16 @@ void AMyraPlayerState::BeginPlay()
 	// Initialize owner-side ASC state on the server once the PlayerState is live.
 	// The avatar may still be null here; the Character will re-init later with itself
 	// as the avatar from PossessedBy / OnRep_PlayerState.
-	if (HasAuthority() && AbilitySystemComponent)
-	{
-		AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
-		GrantDefaultAbilitySets();
-	}
+
+	// CLAUDE:
+	// Do NOT initialize ASC here. The Character's PossessedBy (server)
+	// and OnRep_PlayerState (client) handle InitAbilityActorInfo with a valid avatar.
+	// GrantDefaultAbilitySets is called from there via InitAbilitySystemForPlayerState.
+	//if (HasAuthority() && AbilitySystemComponent)
+	//{
+	//	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
+	//	GrantDefaultAbilitySets();
+	//}
 }
 
 void AMyraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

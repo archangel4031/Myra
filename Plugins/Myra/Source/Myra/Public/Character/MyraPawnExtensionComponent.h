@@ -12,6 +12,7 @@ class UEnhancedInputComponent;
 class UInputComponent;
 class UMyraAbilitySystemComponent;
 class UMyraPawnData;
+class AMyraCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMyraOnPawnReadyToInitialize);
 

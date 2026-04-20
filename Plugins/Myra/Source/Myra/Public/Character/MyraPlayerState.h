@@ -100,7 +100,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMyraAttributeSet> AttributeSet;
 
-private:
+//CLAUDE: 
+//private:
+public:
 
 	void GrantDefaultAbilitySets();
 };

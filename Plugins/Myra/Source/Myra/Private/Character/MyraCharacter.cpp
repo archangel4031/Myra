@@ -20,7 +20,9 @@ AMyraCharacter::AMyraCharacter()
 	// when PlayerState setup is intentionally skipped or unavailable.
 	OwnedAbilitySystemComponent = CreateDefaultSubobject<UMyraAbilitySystemComponent>(
 		TEXT("OwnedAbilitySystemComponent"));
-	OwnedAbilitySystemComponent->SetIsReplicated(true);
+	
+	// Now this should happen in Begin Play
+	//OwnedAbilitySystemComponent->SetIsReplicated(true);
 
 	OwnedAttributeSet = CreateDefaultSubobject<UMyraAttributeSet>(TEXT("OwnedAttributeSet"));
 }
@@ -121,6 +123,12 @@ void AMyraCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// CLAUDE: For PlayerState ASC, replication is handled by the PlayerState. The Character's owned ASC should not replicate to avoid conflicts.
+	if (bUsePlayerStateASC)
+	{
+		OwnedAbilitySystemComponent->SetIsReplicated(false);
+	}
+
 	// AI characters and single-player pawns without a PlayerController
 	// never call PossessedBy on the server via a player. Init here.
 	if (!bUsePlayerStateASC && !bAbilitySystemInitialized)
@@ -148,14 +156,12 @@ bool AMyraCharacter::InitAbilitySystemForPlayerState()
 	AMyraPlayerState* MyraPlayerState = GetPlayerState<AMyraPlayerState>();
 	if (!MyraPlayerState)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("====> AMyraCharacter::InitAbilitySystemForPlayerState: No PlayerState found for %s"), *GetName());
 		return false;
 	}
 
 	ResolvedAbilitySystemComponent = MyraPlayerState->GetMyraAbilitySystemComponent();
 	if (!ResolvedAbilitySystemComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("====> AMyraCharacter::InitAbilitySystemForPlayerState: PlayerState %s does not have an AbilitySystemComponent"), *MyraPlayerState->GetName());
 		return false;
 	}
 
@@ -163,7 +169,14 @@ bool AMyraCharacter::InitAbilitySystemForPlayerState()
 	// and which actor owns it (the PlayerState).
 	ResolvedAbilitySystemComponent->InitAbilityActorInfo(MyraPlayerState, this);
 
+	// Grant PlayerState-level ability sets now that the avatar is valid
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		MyraPlayerState->GrantDefaultAbilitySets();
+	}
+
 	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	//if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(MyraPlayerState))
 	{
 		PawnExtension->HandlePlayerStateReplicated();
 		PawnExtension->HandleAvatarSet();
