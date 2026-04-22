@@ -85,6 +85,9 @@ Refer to the video for more information. (Video made for Plugin Ver 1.0.0)
 
 
 #### Changelog
+- Ver 2.0.0-alpha-5
+    - Pawn Extension Component added natively to Character Class
+    - Gameplay Tags updated
 - Ver 2.0.0-alpha-4
     - Abilities now bind to input via Tags automatically
     - Replaced Character Data with more generic Pawn Data

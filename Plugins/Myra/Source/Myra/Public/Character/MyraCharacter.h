@@ -13,6 +13,7 @@ class UMyraAttributeSet;
 class UMyraAbilitySet;
 class UGameplayEffect;
 class UInputComponent;
+class UMyraPawnExtensionComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMyraOnDeath, AMyraCharacter*, DeadCharacter, AActor*, Killer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMyraOnHealthChanged, AMyraCharacter*, Character, float, OldValue, float, NewValue);
@@ -61,6 +62,16 @@ public:
 	//~ Begin IGameplayTagAssetInterface
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	//~ End IGameplayTagAssetInterface
+
+	// ------------------------------------------------
+	// Myra Pawn Extension Components
+	// ------------------------------------------------
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Myra|Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UMyraPawnExtensionComponent> PawnExtensionComponent;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra")
+	UMyraPawnExtensionComponent* GetPawnExtensionComponent() const { return PawnExtensionComponent; }
 
 	// ------------------------------------------------
 	//  Accessors

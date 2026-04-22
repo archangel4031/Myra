@@ -25,6 +25,9 @@ AMyraCharacter::AMyraCharacter()
 	//OwnedAbilitySystemComponent->SetIsReplicated(true);
 
 	OwnedAttributeSet = CreateDefaultSubobject<UMyraAttributeSet>(TEXT("OwnedAttributeSet"));
+
+	// Pawn Extension Component is always created, but it will only do something if the ASC is initialized and tells it to react.
+	PawnExtensionComponent = CreateDefaultSubobject<UMyraPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
 }
 
 // ------------------------------------------------
@@ -112,10 +115,10 @@ void AMyraCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	if (PawnExtensionComponent)
 	{
-		PawnExtension->HandleControllerChanged();
-		PawnExtension->SetupPlayerInputComponent(PlayerInputComponent);
+		PawnExtensionComponent->HandleControllerChanged();
+		PawnExtensionComponent->SetupPlayerInputComponent(PlayerInputComponent);
 	}
 }
 
@@ -175,11 +178,10 @@ bool AMyraCharacter::InitAbilitySystemForPlayerState()
 		MyraPlayerState->GrantDefaultAbilitySets();
 	}
 
-	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
-	//if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(MyraPlayerState))
+	if (PawnExtensionComponent)
 	{
-		PawnExtension->HandlePlayerStateReplicated();
-		PawnExtension->HandleAvatarSet();
+		PawnExtensionComponent->HandlePlayerStateReplicated();
+		PawnExtensionComponent->HandleAvatarSet();
 	}
 
 	OnAbilitySystemInitialized();
@@ -209,9 +211,9 @@ void AMyraCharacter::InitAbilitySystemOwned()
 		}
 	}
 
-	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	if (PawnExtensionComponent)
 	{
-		PawnExtension->HandleAvatarSet();
+		PawnExtensionComponent->HandleAvatarSet();
 	}
 
 	OnAbilitySystemInitialized();
@@ -219,9 +221,9 @@ void AMyraCharacter::InitAbilitySystemOwned()
 
 void AMyraCharacter::HandlePlayerStateAbilitySystemRemoved()
 {
-	if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+	if (PawnExtensionComponent)
 	{
-		PawnExtension->HandlePawnUninitialized();
+		PawnExtensionComponent->HandlePawnUninitialized();
 	}
 
 	ResolvedAbilitySystemComponent = nullptr;
@@ -357,9 +359,9 @@ void AMyraCharacter::OnDeath_Implementation(AActor* Killer)
 
 	if (IsUsingPlayerStateAbilitySystem())
 	{
-		if (UMyraPawnExtensionComponent* PawnExtension = UMyraPawnExtensionComponent::FindPawnExtensionComponent(this))
+		if (PawnExtensionComponent)
 		{
-			PawnExtension->HandlePawnUninitialized();
+			PawnExtensionComponent->HandlePawnUninitialized();
 		}
 	}
 

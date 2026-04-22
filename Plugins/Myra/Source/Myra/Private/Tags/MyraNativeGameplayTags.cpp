@@ -67,8 +67,8 @@ namespace MyraGameplayTags
 		"Myra.Ability.Activate",
 		"Generic ability activation trigger - used by most abilities");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Ability_Attack,
-		"Myra.Ability.Attack",
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Ability_BaseAttack,
+		"Myra.Ability.BaseAttack",
 		"Basic attack ability (melee or ranged)");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Ability_Move,
@@ -247,12 +247,12 @@ namespace MyraGameplayTags
 		"Myra.Input.Attack",
 		"Bind to basic attack input");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Input_Ability1,
-		"Myra.Input.Ability1",
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Input_AbilityPrimary,
+		"Myra.Input.AbilityPrimary",
 		"Bind your primary ability / slot 1 here in MyraAbilitySet");
 
-	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Input_Ability2,
-		"Myra.Input.Ability2",
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_Input_AbilitySecondary,
+		"Myra.Input.AbilitySecondary",
 		"Bind your secondary ability / slot 2 here in MyraAbilitySet");
 
 } // namespace MyraGameplayTags

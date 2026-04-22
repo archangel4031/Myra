@@ -84,7 +84,7 @@ namespace MyraGameplayTags
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Ability_Activate);
 
 	/** Basic attack ability (melee or ranged) */
-	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Ability_Attack);
+	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Ability_BaseAttack);
 
 	/** Generic movement ability */
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Ability_Move);
@@ -149,7 +149,7 @@ namespace MyraGameplayTags
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_Look);
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_Jump);
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_Attack);
-	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_Ability1);
-	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_Ability2);
+	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_AbilityPrimary);
+	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_Input_AbilitySecondary);
 
 } // namespace MyraGameplayTags
