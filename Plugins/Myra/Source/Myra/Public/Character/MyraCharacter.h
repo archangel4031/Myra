@@ -6,9 +6,9 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayEffectTypes.h"
+#include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "MyraCharacter.generated.h"
 
-class UMyraAbilitySystemComponent;
 class UMyraAttributeSet;
 class UMyraAbilitySet;
 class UGameplayEffect;
@@ -131,6 +131,24 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Myra |Events")
 	FMyraOnHealthChanged OnHealthChanged;
 
+	/**
+	 * Called on the server each time any Gameplay Effect executes on an attribute
+	 * belonging to this character's ASC.
+	 *
+	 * Override this event in your Character Blueprint to respond to any GE execution —
+	 * check Info.Attribute to know which attribute was affected, Info.EffectTags to
+	 * identify what kind of effect it was, and Info.Instigator to know who caused it.
+	 *
+	 * Example uses: spawn a hit reaction animation, show a damage number widget via
+	 * a server RPC, start a burn timer when a fire-tagged GE hits.
+	 *
+	 * NOTE: This fires server-side only. Do not drive client-side UI from here;
+	 * use OnHealthChanged / the ASC's OnAttributeChanged for that instead.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Events")
+	void OnGameplayEffectExecuted(const FMyraGEExecutedInfo& Info);
+	virtual void OnGameplayEffectExecuted_Implementation(const FMyraGEExecutedInfo& Info);
+
 	// ------------------------------------------------
 	//  Configuration
 	// ------------------------------------------------
@@ -184,6 +202,10 @@ protected:
 	virtual void OnDeath_Implementation(AActor* Killer);
 
 private:
+
+	/** Routes the ASC delegate into the BlueprintNativeEvent. */
+	UFUNCTION()
+	void HandleGameplayEffectExecuted(const FMyraGEExecutedInfo& Info);
 
 	// The currently active ASC for this pawn. Exposed so Character Blueprints can always reach it.
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Myra |Components",

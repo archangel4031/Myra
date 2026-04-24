@@ -47,7 +47,7 @@ FMyraGenerationResult FMyraAttributeSetGenerator::GenerateAttributeSet(
 	if (!WriteFile(HeaderPath, HeaderContent, bOverwrite, Result)) return Result;
 	if (!WriteFile(SourcePath, SourceContent, bOverwrite, Result)) return Result;
 
-	Result.bSuccess            = true;
+	Result.bSuccess = true;
 	Result.GeneratedHeaderPath = HeaderPath;
 	Result.GeneratedSourcePath = SourcePath;
 	Result.AddMessage(FString::Printf(
@@ -103,14 +103,14 @@ FString FMyraAttributeSetGenerator::BuildHeaderContent(
 
 		const FString AttrName = Entry.AttributeName.ToString();
 		const bool bMeta = Entry.bIsMetaAttribute;
-		const bool bRep  = Entry.bReplicated && !bMeta;
+		const bool bRep = Entry.bReplicated && !bMeta;
 
 		Out += FString::Printf(TEXT("\t/** %s */\n"), Entry.Tooltip.IsEmpty()
 			? *FString::Printf(TEXT("The %s attribute."), *AttrName)
 			: *Entry.Tooltip.ToString());
 
 		if (bRep)
-			Out += FString::Printf(TEXT("\tUPROPERTY(BlueprintReadOnly, Category = \"%s\", ReplicatedUsing = OnRep_%s)\n"), *SetName, *AttrName);
+			Out += FString::Printf(TEXT("\tUPROPERTY(BlueprintReadOnly, Category = \"Myra|%s\", ReplicatedUsing = OnRep_%s)\n"), *SetName, *AttrName);
 		else
 			Out += TEXT("\tUPROPERTY(BlueprintReadOnly)\n");
 
@@ -122,7 +122,7 @@ FString FMyraAttributeSetGenerator::BuildHeaderContent(
 		{
 			const FString MaxName = TEXT("Max") + AttrName;
 			Out += FString::Printf(TEXT("\t/** Maximum value for %s. */\n"), *AttrName);
-			Out += FString::Printf(TEXT("\tUPROPERTY(BlueprintReadOnly, Category = \"%s\", ReplicatedUsing = OnRep_%s)\n"), *SetName, *MaxName);
+			Out += FString::Printf(TEXT("\tUPROPERTY(BlueprintReadOnly, Category = \"Myra|%s\", ReplicatedUsing = OnRep_%s)\n"), *SetName, *MaxName);
 			Out += FString::Printf(TEXT("\tFGameplayAttributeData %s;\n"), *MaxName);
 			Out += FString::Printf(TEXT("\tATTRIBUTE_ACCESSORS(U%s, %s)\n\n"), *ClassName, *MaxName);
 		}
@@ -162,7 +162,9 @@ FString FMyraAttributeSetGenerator::BuildSourceContent(
 	Out += FString::Printf(TEXT("#include \"%s\"\n"), *HeaderRelPath);
 	Out += TEXT("#include \"GameplayEffectExtension.h\"\n");
 	Out += TEXT("#include \"Net/UnrealNetwork.h\"\n");
-	Out += TEXT("#include \"AbilitySystemComponent.h\"\n\n");
+	Out += TEXT("#include \"AbilitySystemComponent.h\"\n");
+	Out += TEXT("#include \"GameplayEffect.h\"\n");
+	Out += TEXT("#include \"AbilitySystem/MyraAbilitySystemComponent.h\"\n\n");
 
 	// Constructor
 	Out += FString::Printf(TEXT("U%s::U%s()\n{\n"), *ClassName, *ClassName);
@@ -206,15 +208,55 @@ FString FMyraAttributeSetGenerator::BuildSourceContent(
 	// PostGameplayEffectExecute
 	Out += FString::Printf(TEXT("void U%s::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)\n{\n"), *ClassName);
 	Out += TEXT("\tSuper::PostGameplayEffectExecute(Data);\n\n");
+
+	// Meta attribute handling skeleton — one block per meta attribute.
+	// Grab the value, zero it out, then apply it to its target attribute.
 	for (const FMyraAttributeDefinitionEntry& Entry : Definition->Attributes)
 	{
 		if (!Entry.bIsMetaAttribute) continue;
-		// Meta attribute handling skeleton
 		const FString AttrName = Entry.AttributeName.ToString();
 		Out += FString::Printf(TEXT("\tif (Data.EvaluatedData.Attribute == Get%sAttribute())\n\t{\n"), *AttrName);
-		Out += FString::Printf(TEXT("\t\tconst float Local%s = Get%s();\n\t\tSet%s(0.f);\n"), *AttrName, *AttrName, *AttrName);
-		Out += TEXT("\t\t// TODO: Apply this value to your target attribute here.\n\t}\n\n");
+		Out += FString::Printf(TEXT("\t\tconst float Local%s = Get%s();\n"), *AttrName, *AttrName);
+		Out += FString::Printf(TEXT("\t\tSet%s(0.f);\n"), *AttrName);
+		Out += TEXT("\t\t// TODO: Apply Local");
+		Out += AttrName;
+		Out += TEXT(" to your target attribute here.\n\t}\n\n");
 	}
+
+	// ── Broadcast the generic GE execution event to the ASC ──────────────────
+	// This fires AFTER all meta-attribute conversion above, so NewValue is the
+	// final post-processed value. For meta attributes it will be 0 (expected —
+	// they are zeroed above). Use Info.Magnitude for the raw applied amount.
+	//
+	// The event is server-only: PostGameplayEffectExecute never runs on simulated
+	// proxies, but we guard with ROLE_Authority explicitly for clarity and safety.
+	//
+	// Listeners (e.g. your Character Blueprint's OnGameplayEffectExecuted override)
+	// can branch on Info.Attribute, Info.EffectTags, Info.Instigator etc. to react
+	// without needing to know anything about internal attribute set implementation.
+	Out += TEXT("\t// ── Broadcast generic GE execution event ─────────────────────────────\n");
+	Out += TEXT("\tif (UAbilitySystemComponent* __ASC = GetOwningAbilitySystemComponent())\n");
+	Out += TEXT("\t{\n");
+	Out += TEXT("\t\tif (__ASC->GetOwnerRole() == ROLE_Authority)\n");
+	Out += TEXT("\t\t{\n");
+	Out += TEXT("\t\t\tif (UMyraAbilitySystemComponent* MyraASC = Cast<UMyraAbilitySystemComponent>(__ASC))\n");
+	Out += TEXT("\t\t\t{\n");
+	Out += TEXT("\t\t\t\tFMyraGEExecutedInfo Info;\n");
+	Out += TEXT("\t\t\t\tInfo.Attribute  = Data.EvaluatedData.Attribute;\n");
+	Out += TEXT("\t\t\t\tInfo.Magnitude  = Data.EvaluatedData.Magnitude;\n");
+	Out += TEXT("\t\t\t\tInfo.NewValue   = Data.EvaluatedData.Attribute.GetNumericValue(this);\n");
+	Out += TEXT("\t\t\t\tconst FGameplayEffectContextHandle& Context = Data.EffectSpec.GetContext();\n");
+	Out += TEXT("\t\t\t\tInfo.Instigator   = Context.GetInstigator();\n");
+	Out += TEXT("\t\t\t\tInfo.EffectCauser = Context.GetEffectCauser();\n");
+	Out += TEXT("\t\t\t\tif (Data.EffectSpec.Def)\n");
+	Out += TEXT("\t\t\t\t{\n");
+	Out += TEXT("\t\t\t\t\tInfo.EffectTags = Data.EffectSpec.Def->InheritableGameplayEffectTags.CombinedTags;\n");
+	Out += TEXT("\t\t\t\t}\n");
+	Out += TEXT("\t\t\t\tMyraASC->NotifyGameplayEffectExecuted(Info);\n");
+	Out += TEXT("\t\t\t}\n");
+	Out += TEXT("\t\t}\n");
+	Out += TEXT("\t}\n");
+	Out += TEXT("\t// ─────────────────────────────────────────────────────────────────────\n");
 	Out += TEXT("}\n\n");
 
 	// OnRep implementations

@@ -284,6 +284,12 @@ void AMyraCharacter::BindAttributeChangeCallbacks()
 		MyraGameplayTags::Myra_State_Dead,
 		EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &AMyraCharacter::HandleDeathTag);
+
+	// Remove any previous binding first to avoid double-binding on re-init.
+	ResolvedAbilitySystemComponent->OnGameplayEffectAttributeExecuted.RemoveDynamic(
+		this, &AMyraCharacter::HandleGameplayEffectExecuted);
+	ResolvedAbilitySystemComponent->OnGameplayEffectAttributeExecuted.AddDynamic(
+		this, &AMyraCharacter::HandleGameplayEffectExecuted);
 }
 
 bool AMyraCharacter::IsUsingPlayerStateAbilitySystem() const
@@ -370,4 +376,17 @@ void AMyraCharacter::OnDeath_Implementation(AActor* Killer)
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
+}
+
+
+void AMyraCharacter::HandleGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)
+{
+	// Route the ASC delegate into the Blueprint-overridable NativeEvent.
+	OnGameplayEffectExecuted(Info);
+}
+
+void AMyraCharacter::OnGameplayEffectExecuted_Implementation(const FMyraGEExecutedInfo& Info)
+{
+	// Default implementation is intentionally empty.
+	// Override this event in your Character Blueprint to react to GE executions.
 }

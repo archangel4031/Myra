@@ -19,7 +19,6 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 {
 	if (!ASC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Myra: GiveToAbilitySystem called with null ASC on AbilitySet '%s'."), *GetName());
 		return;
 	}
 
@@ -34,7 +33,6 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 	{
 		if (!IsValid(Entry.AttributeSetClass))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Myra: AbilitySet '%s' has an invalid AttributeSet entry."), *GetName());
 			continue;
 		}
 

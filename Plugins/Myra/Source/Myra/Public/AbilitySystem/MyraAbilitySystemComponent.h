@@ -11,6 +11,64 @@ class UMyraAbilitySet;
 class UAttributeSet;
 
 /**
+ * FMyraGEExecutedInfo
+ *
+ * Carried by OnGameplayEffectAttributeExecuted whenever a Gameplay Effect
+ * executes on an attribute (instant GE or periodic tick).
+ *
+ * Key difference from OnAttributeChanged:
+ *   - This fires server-side only, inside PostGameplayEffectExecute.
+ *   - It carries the full GE context: who caused it, its tags, raw magnitude.
+ *
+ * For UI updates use OnAttributeChanged instead — it fires after replication
+ * on all clients and is the right signal for health bars etc.
+ */
+USTRUCT(BlueprintType)
+struct FMyraGEExecutedInfo
+{
+	GENERATED_BODY()
+
+	/** The attribute that the Gameplay Effect targeted. */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	FGameplayAttribute Attribute;
+
+	/**
+	 * Current value of the attribute AFTER the GE was fully processed
+	 * (including meta-attribute conversion in PostGameplayEffectExecute).
+	 * For meta attributes (Damage, Healing) this will be 0 because
+	 * they are zeroed out after conversion — use Magnitude for the raw amount.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	float NewValue = 0.f;
+
+	/** The raw magnitude the GE applied to the attribute. Always meaningful. */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	float Magnitude = 0.f;
+
+	/**
+	 * The actor that owns the ASC which sourced this effect.
+	 * e.g. the player character who cast the ability.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	TObjectPtr<AActor> Instigator = nullptr;
+
+	/**
+	 * The physical actor that caused the hit (e.g. a projectile or melee weapon).
+	 * May be the same as Instigator if there is no intermediary actor.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	TObjectPtr<AActor> EffectCauser = nullptr;
+
+	/**
+	 * Asset tags defined on the Gameplay Effect class.
+	 * Use these to identify effect types (e.g. "Damage.Fire", "Buff.Speed")
+	 * without hard-coding attribute names.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|GE Info")
+	FGameplayTagContainer EffectTags;
+};
+
+/**
  * Delegate broadcast whenever any attribute changes on this ASC.
  * UI elements can bind to this to update health bars, mana bars, etc.
  */
@@ -19,6 +77,17 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FGameplayAttribute, Attribute,
 	float, OldValue,
 	float, NewValue);
+
+/**
+ * Broadcast on the server each time a Gameplay Effect executes on any attribute.
+ * Carries the full execution context including instigator, causer, and effect tags.
+ *
+ * Note: this is a server-side event. For client UI, bind to OnAttributeChanged instead.
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FMyraGEExecutedDelegate,
+	const FMyraGEExecutedInfo&, Info);
+
 
 /**
  * UMyraAbilitySystemComponent
@@ -107,6 +176,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Myra |Events")
 	FMyraAttributeChangedDelegate OnAttributeChanged;
 
+	/**
+	 * Fires on the server each time any Gameplay Effect executes on an attribute
+	* belonging to an AttributeSet on this ASC.
+	*
+	* Bind to this from the Character, a Game Mode, or any server-side object that
+	* needs to react to GE execution with full context (who, what magnitude, what tags).
+	*/
+	UPROPERTY(BlueprintAssignable, Category = "Myra|Events")
+	FMyraGEExecutedDelegate OnGameplayEffectAttributeExecuted;
+
 
 	/**
 	 * Called by UMyraAttributeSet::PostAttributeChange to broadcast OnAttributeChanged.
@@ -115,6 +194,13 @@ public:
 	 * Blueprint UI widgets can bind to it.
 	 */
 	void NotifyAttributeChanged(const FGameplayAttribute& Attribute, float OldValue, float NewValue);
+
+	/**
+	 * Called by UMyraAttributeSet::PostGameplayEffectExecute to push the execution
+	 * event up to the ASC where Blueprint objects can bind to it.
+	 * You should not need to call this directly.
+	 */
+	void NotifyGameplayEffectExecuted(const FMyraGEExecutedInfo& Info);
 
 protected:
 

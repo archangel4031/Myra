@@ -7,6 +7,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Tags/MyraNativeGameplayTags.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
+#include "GameplayEffect.h"
 
 UMyraAttributeSet::UMyraAttributeSet()
 {
@@ -24,8 +25,8 @@ void UMyraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	// REPNOTIFY_Always ensures OnRep fires even when the value doesn't change
 	// (e.g. clamped at max). Required so prediction corrections work correctly.
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, Health,     COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, MaxHealth,  COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UMyraAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	// Damage and Healing are meta attributes — intentionally NOT replicated.
 }
 
@@ -95,6 +96,37 @@ void UMyraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	// Final clamp for Health after any change.
 	SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
+
+	// ── Broadcast the generic GE execution event ─────────────────────────────
+	// This runs AFTER all meta-attribute conversion above, so NewValue correctly
+	// reflects the post-processed state (meta attributes will read 0 here, which
+	// is expected — use Info.Magnitude for the raw applied amount).
+	// Only broadcast on authority: PostGameplayEffectExecute never runs on
+	// simulated proxies, but guard explicitly for clarity.
+	if (ASC->GetOwnerRole() == ROLE_Authority)
+	{
+		if (UMyraAbilitySystemComponent* MyraASC = Cast<UMyraAbilitySystemComponent>(ASC))
+		{
+			FMyraGEExecutedInfo Info;
+			Info.Attribute = Data.EvaluatedData.Attribute;
+			Info.Magnitude = Data.EvaluatedData.Magnitude;
+			Info.NewValue = Data.EvaluatedData.Attribute.GetNumericValue(this);
+
+			const FGameplayEffectContextHandle& Context = Data.EffectSpec.GetContext();
+			Info.Instigator = Context.GetInstigator();
+			Info.EffectCauser = Context.GetEffectCauser();
+
+			if (Data.EffectSpec.Def)
+			{
+				// Asset tags baked into the GE Blueprint (e.g. "Damage.Fire", "Buff.Speed").
+				Info.EffectTags =
+					Data.EffectSpec.Def->InheritableGameplayEffectTags.CombinedTags;
+			}
+
+			MyraASC->NotifyGameplayEffectExecuted(Info);
+		}
+	}
+	// ─────────────────────────────────────────────────────────────────────────
 }
 
 // ------------------------------------------------

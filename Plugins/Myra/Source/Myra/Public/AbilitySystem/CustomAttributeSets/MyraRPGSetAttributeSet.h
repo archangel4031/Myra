@@ -29,22 +29,22 @@ public:
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	/** Mana Attribute */
-	UPROPERTY(BlueprintReadOnly, Category = "RPGSet", ReplicatedUsing = OnRep_Mana)
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|RPGSet", ReplicatedUsing = OnRep_Mana)
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UMyraRPGSetAttributeSet, Mana)
 
 	/** Maximum value for Mana. */
-	UPROPERTY(BlueprintReadOnly, Category = "RPGSet", ReplicatedUsing = OnRep_MaxMana)
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|RPGSet", ReplicatedUsing = OnRep_MaxMana)
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(UMyraRPGSetAttributeSet, MaxMana)
 
 	/** Stamina Attribute */
-	UPROPERTY(BlueprintReadOnly, Category = "RPGSet", ReplicatedUsing = OnRep_Stamina)
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|RPGSet", ReplicatedUsing = OnRep_Stamina)
 	FGameplayAttributeData Stamina;
 	ATTRIBUTE_ACCESSORS(UMyraRPGSetAttributeSet, Stamina)
 
 	/** Maximum value for Stamina. */
-	UPROPERTY(BlueprintReadOnly, Category = "RPGSet", ReplicatedUsing = OnRep_MaxStamina)
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|RPGSet", ReplicatedUsing = OnRep_MaxStamina)
 	FGameplayAttributeData MaxStamina;
 	ATTRIBUTE_ACCESSORS(UMyraRPGSetAttributeSet, MaxStamina)
 

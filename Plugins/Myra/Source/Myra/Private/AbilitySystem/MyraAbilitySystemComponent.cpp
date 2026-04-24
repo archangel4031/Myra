@@ -222,3 +222,8 @@ void UMyraAbilitySystemComponent::NotifyAttributeChanged(
 {
 	OnAttributeChanged.Broadcast(Attribute, OldValue, NewValue);
 }
+
+void UMyraAbilitySystemComponent::NotifyGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)
+{
+	OnGameplayEffectAttributeExecuted.Broadcast(Info);
+}
