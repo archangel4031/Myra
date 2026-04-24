@@ -121,6 +121,14 @@ bool UMyraAbilitySystemComponent::HasAttributeSetOfClass(TSubclassOf<UAttributeS
 
 		for (UObject* Object : OwnerSubobjects)
 		{
+			// Only treat constructor-created default subobjects as permanently owned sets.
+			// Runtime-spawned sets that were removed from the ASC can still exist under the same
+			// owner until GC, and must not block a later re-grant of the same AbilitySet.
+			if (!Object || !Object->HasAnyFlags(RF_DefaultSubObject))
+			{
+				continue;
+			}
+
 			const UAttributeSet* ExistingSet = Cast<UAttributeSet>(Object);
 			if (ExistingSet && ExistingSet->GetClass() == AttributeSetClassPtr)
 			{
