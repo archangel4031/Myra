@@ -260,7 +260,7 @@ FString FMyraAttributeSetGenerator::BuildSourceContent(
 	Out += TEXT("\t\t\t\tInfo.EffectCauser = Context.GetEffectCauser();\n");
 	Out += TEXT("\t\t\t\tif (Data.EffectSpec.Def)\n");
 	Out += TEXT("\t\t\t\t{\n");
-	Out += TEXT("\t\t\t\t\tInfo.EffectTags = Data.EffectSpec.Def->InheritableGameplayEffectTags.CombinedTags;\n");
+	Out += TEXT("\t\t\t\t\tInfo.EffectTags = Data.EffectSpec.Def->GetAssetTags();\n");
 	Out += TEXT("\t\t\t\t}\n");
 	Out += TEXT("\t\t\t\tMyraASC->NotifyGameplayEffectExecuted(Info);\n");
 	Out += TEXT("\t\t\t}\n");

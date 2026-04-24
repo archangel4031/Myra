@@ -119,8 +119,7 @@ void UMyraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 			if (Data.EffectSpec.Def)
 			{
 				// Asset tags baked into the GE Blueprint (e.g. "Damage.Fire", "Buff.Speed").
-				Info.EffectTags =
-					Data.EffectSpec.Def->InheritableGameplayEffectTags.CombinedTags;
+				Info.EffectTags = Data.EffectSpec.Def->GetAssetTags();
 			}
 
 			MyraASC->NotifyGameplayEffectExecuted(Info);
