@@ -71,7 +71,8 @@ FString FMyraAttributeSetGenerator::BuildHeaderContent(
 	Out += TEXT("// Copyright Your Project. All Rights Reserved.\n");
 	Out += TEXT("#pragma once\n\n");
 	Out += TEXT("#include \"CoreMinimal.h\"\n");
-	Out += TEXT("#include \"AbilitySystem/MyraAttributeSet.h\"\n");
+	Out += TEXT("#include \"AttributeSet.h\"\n");
+	Out += TEXT("#include \"AbilitySystemComponent.h\"\n");
 
 	for (const FString& Extra : Definition->ExtraIncludes)
 	{
@@ -88,13 +89,14 @@ FString FMyraAttributeSetGenerator::BuildHeaderContent(
 	Out += TEXT("\tGAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)\n");
 	Out += TEXT("#endif\n\n");
 
-	Out += FString::Printf(TEXT("UCLASS()\nclass MYRA_API U%s : public UMyraAttributeSet\n{\n\tGENERATED_BODY()\n\npublic:\n\n"),
+	Out += FString::Printf(TEXT("UCLASS()\nclass MYRA_API U%s : public UAttributeSet\n{\n\tGENERATED_BODY()\n\npublic:\n\n"),
 		*ClassName);
 
 	Out += FString::Printf(TEXT("\tU%s();\n\n"), *ClassName);
 	Out += TEXT("\tvirtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;\n");
 	Out += TEXT("\tvirtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;\n");
-	Out += TEXT("\tvirtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;\n\n");
+	Out += TEXT("\tvirtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;\n");
+	Out += TEXT("\tvirtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;\n\n");
 
 	// Declare each attribute
 	for (const FMyraAttributeDefinitionEntry& Entry : Definition->Attributes)
@@ -162,7 +164,6 @@ FString FMyraAttributeSetGenerator::BuildSourceContent(
 	Out += FString::Printf(TEXT("#include \"%s\"\n"), *HeaderRelPath);
 	Out += TEXT("#include \"GameplayEffectExtension.h\"\n");
 	Out += TEXT("#include \"Net/UnrealNetwork.h\"\n");
-	Out += TEXT("#include \"AbilitySystemComponent.h\"\n");
 	Out += TEXT("#include \"GameplayEffect.h\"\n");
 	Out += TEXT("#include \"AbilitySystem/MyraAbilitySystemComponent.h\"\n\n");
 
@@ -203,6 +204,15 @@ FString FMyraAttributeSetGenerator::BuildSourceContent(
 		Out += FString::Printf(TEXT("\tif (Attribute == Get%sAttribute())\n\t\tNewValue = FMath::Clamp(NewValue, 0.f, Get%s());\n"), *AttrName, *(TEXT("Max") + AttrName));
 		Out += FString::Printf(TEXT("\telse if (Attribute == GetMax%sAttribute())\n\t\tNewValue = FMath::Max(NewValue, 1.f);\n\n"), *AttrName);
 	}
+	Out += TEXT("}\n\n");
+
+	// PostAttributeChange
+	Out += FString::Printf(TEXT("void U%s::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)\n{\n"), *ClassName);
+	Out += TEXT("\tSuper::PostAttributeChange(Attribute, OldValue, NewValue);\n\n");
+	Out += TEXT("\tif (UMyraAbilitySystemComponent* MyraASC = Cast<UMyraAbilitySystemComponent>(GetOwningAbilitySystemComponent()))\n");
+	Out += TEXT("\t{\n");
+	Out += TEXT("\t\tMyraASC->NotifyAttributeChanged(Attribute, OldValue, NewValue);\n");
+	Out += TEXT("\t}\n");
 	Out += TEXT("}\n\n");
 
 	// PostGameplayEffectExecute

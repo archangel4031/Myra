@@ -140,6 +140,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	bool HasAttribute(FGameplayAttribute Attribute) const;
 
+	/** Returns true if this ASC already owns an AttributeSet instance of the exact class. */
+	bool HasAttributeSetOfClass(TSubclassOf<UAttributeSet> AttributeSetClass) const;
+
 	/**
 	 * Apply a Gameplay Effect to self by class.
 	 * Wrapper so beginners can call this from Blueprint without needing a handle.

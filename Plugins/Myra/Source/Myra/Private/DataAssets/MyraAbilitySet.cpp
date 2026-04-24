@@ -36,17 +36,9 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 			continue;
 		}
 
-		// Don't add a duplicate — check whether this class is already present on the ASC.
-		bool bAlreadyPresent = false;
-		for (const UAttributeSet* ExistingSet : ASC->GetSpawnedAttributes())
-		{
-			if (ExistingSet && ExistingSet->GetClass() == Entry.AttributeSetClass)
-			{
-				bAlreadyPresent = true;
-				break;
-			}
-		}
-		if (bAlreadyPresent)
+		// Don't add a duplicate — account for both runtime-spawned sets and default subobjects
+		// that already belong to the ASC owner (e.g. the base UMyraAttributeSet on Character/PlayerState).
+		if (ASC->HasAttributeSetOfClass(Entry.AttributeSetClass))
 		{
 			continue;
 		}

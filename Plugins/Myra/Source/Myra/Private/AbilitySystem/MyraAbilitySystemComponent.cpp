@@ -3,6 +3,8 @@
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
+#include "AttributeSet.h"
+#include "UObject/UObjectGlobals.h"
 
 UMyraAbilitySystemComponent::UMyraAbilitySystemComponent()
 {
@@ -94,6 +96,40 @@ float UMyraAbilitySystemComponent::GetAttributeValue(FGameplayAttribute Attribut
 bool UMyraAbilitySystemComponent::HasAttribute(FGameplayAttribute Attribute) const
 {
 	return HasAttributeSetForAttribute(Attribute);
+}
+
+bool UMyraAbilitySystemComponent::HasAttributeSetOfClass(TSubclassOf<UAttributeSet> AttributeSetClass) const
+{
+	UClass* AttributeSetClassPtr = AttributeSetClass.Get();
+	if (!AttributeSetClassPtr)
+	{
+		return false;
+	}
+
+	for (const UAttributeSet* ExistingSet : GetSpawnedAttributes())
+	{
+		if (ExistingSet && ExistingSet->GetClass() == AttributeSetClassPtr)
+		{
+			return true;
+		}
+	}
+
+	if (const AActor* MyraOwnerActor = GetOwner())
+	{
+		TArray<UObject*> OwnerSubobjects;
+		GetObjectsWithOuter(const_cast<AActor*>(MyraOwnerActor), OwnerSubobjects, false);
+
+		for (UObject* Object : OwnerSubobjects)
+		{
+			const UAttributeSet* ExistingSet = Cast<UAttributeSet>(Object);
+			if (ExistingSet && ExistingSet->GetClass() == AttributeSetClassPtr)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyEffectToSelf(

@@ -4,7 +4,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/MyraAttributeSet.h"
+#include "AttributeSet.h"
+#include "AbilitySystemComponent.h"
 #include "MyraRPGSetAttributeSet.generated.h"
 
 #ifndef ATTRIBUTE_ACCESSORS
@@ -16,7 +17,7 @@
 #endif
 
 UCLASS()
-class MYRA_API UMyraRPGSetAttributeSet : public UMyraAttributeSet
+class MYRA_API UMyraRPGSetAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
 
@@ -27,6 +28,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 
 	/** Mana Attribute */
 	UPROPERTY(BlueprintReadOnly, Category = "Myra|RPGSet", ReplicatedUsing = OnRep_Mana)
