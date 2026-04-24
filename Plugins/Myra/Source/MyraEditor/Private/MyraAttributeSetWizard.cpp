@@ -13,6 +13,8 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Misc/MessageDialog.h"
+#include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "MyraAttributeSetWizard"
 
@@ -162,12 +164,24 @@ FReply SMyraAttributeSetWizard::OnGenerateClicked()
 
 	if (GenResult.bSuccess)
 	{
+		const FString CleanScriptPath = FPaths::ConvertRelativePathToFull(
+			FPaths::Combine(FPaths::ProjectDir(), TEXT("CleanUEBuild.ps1")));
+
 		AppendLog(TEXT(""));
 		AppendLog(TEXT("SUCCESS — files written to disk."));
-		AppendLog(TEXT("Next step: build the Editor target once so UnrealHeaderTool registers the new UCLASS."));
-		AppendLog(TEXT("Live Coding usually will not discover brand-new reflected headers/files."));
-		AppendLog(TEXT("Recommended: close the editor, build Development Editor in Visual Studio or Rider, then reopen."));
-		AppendLog(TEXT("After that, the new AttributeSet class will appear in class pickers and data assets."));
+		AppendLog(TEXT("Next step: close the editor, run CleanUEBuild.ps1, regenerate Visual Studio project files from the .uproject, then rebuild the solution."));
+
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(FString::Printf(
+				TEXT("Attribute Set generation completed successfully.\n\n")
+				TEXT("Next steps:\n")
+				TEXT("1. Close the editor.\n")
+				TEXT("2. Run this script from the project root:\n%s\n")
+				TEXT("3. Right-click the .uproject and choose Generate Visual Studio Project Files.\n")
+				TEXT("4. Rebuild the Visual Studio solution."),
+				*CleanScriptPath)),
+			LOCTEXT("GenerationCompleteDialogTitle", "Attribute Set Generated"));
 	}
 
 	return FReply::Handled();
