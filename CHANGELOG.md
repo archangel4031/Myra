@@ -1,0 +1,64 @@
+#### Changelog
+- Ver 2.0.0-alpha-6
+    - Added BP notifiers for Gameplay Effect changes
+    - Fixed issue of Duplicate Default Attributes
+    - Fix depricated Gameplay Effect Tags API
+    - Added Dialog Box on Attribute Generation Wizard with next steps
+    - Change history moved to [CHANGELOG](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)
+- Ver 2.0.0-alpha-5
+    - Pawn Extension Component added natively to Character Class
+    - Gameplay Tags updated
+- Ver 2.0.0-alpha-4
+    - Abilities now bind to input via Tags automatically
+    - Replaced Character Data with more generic Pawn Data
+    - Pawn Extension Component uses Pawn Data to grant Ability Set, Input Config etc.
+    - Added Sample InputConfig Data Asset
+- Ver 2.0.0-alpha-3
+    - Fixed Ability Set not Removing Attributes properly
+    - Update Wiki Pages
+- Ver 2.0.0-alpha-2
+    - Fixed Gameplay Tags hierarchy. ALl native Tags start with Myra.*
+    - Base Attribute Set only contains Health. Example Data Assets provided for Mana, Stamina etc.
+    - Combat Attribute set is now only as a Data Asset. User must generate and compile manually
+    - Quailty of Code improvements
+    - Cleanup Script added for Fresh Compile
+- Ver 2.0.0-alpha
+    - Project renamed to Myra.
+    - Rewritten from scratch following Lyra Starter Game Best Practices.
+-   Ver 1.6.1
+    - Compied for UE 5.5
+-   Ver 1.6.0
+    -   Added support for [Advanced Locomotion System - Community Version](https://github.com/dyanikoglu/ALS-Community)
+    -   Simply Download the ALS Plugin and paste in Project **Plugins** Directory
+    -   Added option in GAS Associate Helper to use Plugin with or without ALS _(Experimental)_
+-   Ver 1.5.1
+    -   Update plugin project to Unreal Engine 5.1 The project name has also changed
+    -   Update API to Unreal Engine version 5.1. Code changed in Target Actor Classes
+    -   Added prompt for using GAS Associate Helper. Now the plugin will explicitly ask you to press _Yes_ before modifying the files
+-   Ver 1.5.0
+    -   Added functions for setting Attribute Values directly from Character Class. These can be used to initialize Attributes from Save File for example.
+    -   Updated GAS Associate Helper to create Setter functions for changing Attributes directly. Now GAS Associate Helper will also create these Setter functions for each Attribute
+-   Ver 1.4.1
+    -   Improved error handling for Attribute Names
+    -   Added error handling for empty starting data. Not setting Default Starting Data with Attribute Table will no longer crash the Engine
+-   Ver 1.3.0
+    -   Added error handling for Attribute Names. Now GAS Associate Helper will take proper inputs for Attribute Names. It will ignore wrong / invalid syntax names
+    -   Added error handling for empty DefaultGASAttributes.ini file. In case of any error reading the file, plugin will auto add a default attribute of Health and Max Health
+    -   Added separate branch for in-development version for public testing (beta version of plugin will go in _[devtesting](https://github.com/archangel4031/Myra/branches)_ branch)
+-   Ver 1.3.0
+    -   Added a proper Target Actor for ground trace. This Target Actor is based of built in Ground Trace Target Actor Class
+    -   Removed support for UE4. The UE4 will now exist on _[legacy](https://github.com/archangel4031/Myra/tree/legacyUE4UE5)_ branch
+-   Ver 1.2.2
+    -   Added an option to select Replication Mode for Ability System Component in Attribute Helper Wizard. Now you can use Full mode for single player games
+    -   Default Replication Mode is set to **_Full_**
+-   Ver 1.2.1
+    -   Added Get Ability Info Function in Character Class as well. Now you can get GA Class info in Character Class to update UI Elements
+    -   Fixed spelling mistake in GAS Character Class
+    -   Fixed Initial Data Table with values for all example Attributes
+-   Ver 1.2.0
+    -   Added Get Ability Info Function in GAS Gameplay Ability. Now you can retrieve information about Ability Cost and Cooldown using this function. (Currently only Modifier based Cost is supported)
+    -   Added a separate [**Release**](https://github.com/archangel4031/Myra/releases) for Ver 1.2.0
+-   Ver 1.1.0
+    -   Added an option to automatically create a Max Value Attribute to handle clamping (see Example Project)
+    -   Added Server Only functions that only execute as server. Generic versions of functions still exists and may be useful in some cases
+    -   More comments in C++ Code
