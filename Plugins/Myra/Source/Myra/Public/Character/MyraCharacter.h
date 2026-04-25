@@ -9,7 +9,7 @@
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "MyraCharacter.generated.h"
 
-class UMyraAttributeSet;
+class UMyraDefaultAttributeSet;
 class UMyraAbilitySet;
 class UGameplayEffect;
 class UInputComponent;
@@ -93,7 +93,7 @@ public:
 	UMyraAbilitySystemComponent* GetMyraAbilitySystemComponent() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
-	const UMyraAttributeSet* GetBaseAttributeSet() const;
+	const UMyraDefaultAttributeSet* GetBaseAttributeSet() const;
 
 	// ------------------------------------------------
 	//  Attribute Helpers (Blueprint-friendly)
@@ -220,7 +220,7 @@ private:
 
 	// Owned base attribute set paired with the Character-owned ASC.
 	UPROPERTY()
-	TObjectPtr<UMyraAttributeSet> OwnedAttributeSet;
+	TObjectPtr<UMyraDefaultAttributeSet> OwnedAttributeSet;
 
 	bool InitAbilitySystemForPlayerState();
 	void InitAbilitySystemOwned();

@@ -17,7 +17,7 @@ namespace MyraGameplayTags
 {
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_State_Dead,
 		"Myra.State.Dead",
-		"Applied when Health reaches zero. MyraAttributeSet adds this tag; MyraCharacter listens for it.");
+		"Applied when Health reaches zero. MyraDefaultAttributeSet adds this tag; MyraCharacter listens for it.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_State_Spawning,
 		"Myra.State.Spawning",
@@ -33,7 +33,7 @@ namespace MyraGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_GameEvent_Death,
 		"Myra.GameEvent.Death",
-		"Sent via gameplay event when Health hits 0. UMyraAttributeSet fires this.");
+		"Sent via gameplay event when Health hits 0. UMyraDefaultAttributeSet fires this.");
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Myra_GameEvent_FullHeal,
 		"Myra.GameEvent.FullHeal",

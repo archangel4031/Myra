@@ -7,7 +7,7 @@
 
 /**
  * Defines a single attribute for use in the Myra  editor wizard.
- * The wizard reads these structs and generates a UAttributeSet subclass.
+ * The wizard reads these structs and generates a UMyraBaseAttributeSet subclass.
  */
 USTRUCT(BlueprintType)
 struct FMyraAttributeDefinitionEntry

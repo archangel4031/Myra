@@ -37,7 +37,7 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 		}
 
 		// Don't add a duplicate — account for both runtime-spawned sets and default subobjects
-		// that already belong to the ASC owner (e.g. the base UMyraAttributeSet on Character/PlayerState).
+		// that already belong to the ASC owner (e.g. the default UMyraDefaultAttributeSet on Character/PlayerState).
 		if (ASC->HasAttributeSetOfClass(Entry.AttributeSetClass))
 		{
 			continue;

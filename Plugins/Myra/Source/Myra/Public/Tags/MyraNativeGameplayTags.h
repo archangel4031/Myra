@@ -46,7 +46,7 @@ namespace MyraGameplayTags
 	//  Sent via UAbilitySystemBlueprintLibrary::SendGameplayEventToActor.
 	// -------------------------------------------------------
 
-	/** Fired when Health hits zero (from PostGameplayEffectExecute on MyraAttributeSet). */
+	/** Fired when Health hits zero (from PostGameplayEffectExecute on MyraDefaultAttributeSet). */
 	MYRA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Myra_GameEvent_Death);
 
 	/** Fired when healing fully restores Health to MaxHealth. */

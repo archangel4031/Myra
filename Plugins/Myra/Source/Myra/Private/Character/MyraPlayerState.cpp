@@ -2,7 +2,7 @@
 
 #include "Character/MyraPlayerState.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
-#include "AbilitySystem/MyraAttributeSet.h"
+#include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "Net/UnrealNetwork.h"
 
@@ -20,7 +20,7 @@ AMyraPlayerState::AMyraPlayerState()
 
 	// Create the base attribute set. Subobjects created on the owner are auto-registered
 	// with the ASC — no manual registration needed.
-	AttributeSet = CreateDefaultSubobject<UMyraAttributeSet>(TEXT("AttributeSet"));
+	AttributeSet = CreateDefaultSubobject<UMyraDefaultAttributeSet>(TEXT("AttributeSet"));
 }
 
 UAbilitySystemComponent* AMyraPlayerState::GetAbilitySystemComponent() const

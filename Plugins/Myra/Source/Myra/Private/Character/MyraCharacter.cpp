@@ -2,7 +2,7 @@
 
 #include "Character/MyraCharacter.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
-#include "AbilitySystem/MyraAttributeSet.h"
+#include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "Character/MyraPawnExtensionComponent.h"
 #include "Character/MyraPlayerState.h"
 #include "DataAssets/MyraAbilitySet.h"
@@ -24,7 +24,7 @@ AMyraCharacter::AMyraCharacter()
 	// Now this should happen in Begin Play
 	//OwnedAbilitySystemComponent->SetIsReplicated(true);
 
-	OwnedAttributeSet = CreateDefaultSubobject<UMyraAttributeSet>(TEXT("OwnedAttributeSet"));
+	OwnedAttributeSet = CreateDefaultSubobject<UMyraDefaultAttributeSet>(TEXT("OwnedAttributeSet"));
 
 	// Pawn Extension Component is always created, but it will only do something if the ASC is initialized and tells it to react.
 	PawnExtensionComponent = CreateDefaultSubobject<UMyraPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
@@ -44,11 +44,11 @@ UMyraAbilitySystemComponent* AMyraCharacter::GetMyraAbilitySystemComponent() con
 	return ResolvedAbilitySystemComponent;
 }
 
-const UMyraAttributeSet* AMyraCharacter::GetBaseAttributeSet() const
+const UMyraDefaultAttributeSet* AMyraCharacter::GetBaseAttributeSet() const
 {
 	if (ResolvedAbilitySystemComponent)
 	{
-		return ResolvedAbilitySystemComponent->GetSet<UMyraAttributeSet>();
+		return ResolvedAbilitySystemComponent->GetSet<UMyraDefaultAttributeSet>();
 	}
 	return nullptr;
 }
@@ -269,10 +269,10 @@ void AMyraCharacter::BindAttributeChangeCallbacks()
 
 	// Bind to Health changes to broadcast our Blueprint delegate and handle death.
 	ResolvedAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		UMyraAttributeSet::GetHealthAttribute())
+		UMyraDefaultAttributeSet::GetHealthAttribute())
 		.RemoveAll(this);
 	ResolvedAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		UMyraAttributeSet::GetHealthAttribute())
+		UMyraDefaultAttributeSet::GetHealthAttribute())
 		.AddUObject(this, &AMyraCharacter::HandleHealthChanged);
 
 	// Listen for the Death gameplay tag being added (set by the attribute set).
@@ -309,7 +309,7 @@ bool AMyraCharacter::IsUsingPlayerStateAbilitySystem() const
 
 float AMyraCharacter::GetHealth() const
 {
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
+	if (const UMyraDefaultAttributeSet* AS = GetBaseAttributeSet())
 	{
 		return AS->GetHealth();
 	}
@@ -318,7 +318,7 @@ float AMyraCharacter::GetHealth() const
 
 float AMyraCharacter::GetMaxHealth() const
 {
-	if (const UMyraAttributeSet* AS = GetBaseAttributeSet())
+	if (const UMyraDefaultAttributeSet* AS = GetBaseAttributeSet())
 	{
 		return AS->GetMaxHealth();
 	}

@@ -30,7 +30,7 @@ struct FMyraGenerationResult
  * FMyraAttributeSetGenerator
  *
  * Takes a UMyraAttributeDefinition data asset and produces a pair of
- * .h / .cpp files for a new UAttributeSet subclass.
+ * .h / .cpp files for a new UMyraBaseAttributeSet subclass.
  *
  * KEY DESIGN RULE: This generator ONLY creates NEW files.
  *   It will refuse to overwrite an existing file unless bOverwrite is true.

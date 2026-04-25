@@ -8,6 +8,7 @@
 
 class UMyraGameplayAbility;
 class UMyraAbilitySet;
+class UMyraDefaultAttributeSet;
 class UAttributeSet;
 
 /**
@@ -109,6 +110,8 @@ public:
 
 	UMyraAbilitySystemComponent();
 
+	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
+
 	// ------------------------------------------------
 	//  Ability Set Granting
 	// ------------------------------------------------
@@ -191,7 +194,7 @@ public:
 
 
 	/**
-	 * Called by UMyraAttributeSet::PostAttributeChange to broadcast OnAttributeChanged.
+	 * Called by UMyraBaseAttributeSet::PostAttributeChange to broadcast OnAttributeChanged.
 	 * PostAttributeChange is a virtual on UAttributeSet (not UAbilitySystemComponent),
 	 * so the AttributeSet calls this method to push the event up to the ASC where
 	 * Blueprint UI widgets can bind to it.
@@ -199,7 +202,7 @@ public:
 	void NotifyAttributeChanged(const FGameplayAttribute& Attribute, float OldValue, float NewValue);
 
 	/**
-	 * Called by UMyraAttributeSet::PostGameplayEffectExecute to push the execution
+	 * Called by UMyraBaseAttributeSet::PostGameplayEffectExecute to push the execution
 	 * event up to the ASC where Blueprint objects can bind to it.
 	 * You should not need to call this directly.
 	 */
@@ -219,4 +222,9 @@ protected:
 
 	/** Tracks init effects by handle so pawn-scoped init effects can be removed and re-applied later. */
 	TMap<FActiveGameplayEffectHandle, const UClass*> AppliedInitializationEffects;
+
+private:
+
+	void EnsureDefaultAttributeSet();
+	bool HasDefaultAttributeSet() const;
 };

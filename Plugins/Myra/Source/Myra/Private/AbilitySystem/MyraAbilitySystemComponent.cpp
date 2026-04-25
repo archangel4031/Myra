@@ -2,6 +2,7 @@
 
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
+#include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
 #include "AttributeSet.h"
 #include "UObject/UObjectGlobals.h"
@@ -12,6 +13,12 @@ UMyraAbilitySystemComponent::UMyraAbilitySystemComponent()
 	// Full mode replicates all GE info to every client (only use in single player or small games).
 	// Minimal mode only replicates to owner (use if owner doesn't need GE details locally).
 	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
+}
+
+void UMyraAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
+{
+	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+	EnsureDefaultAttributeSet();
 }
 
 // ------------------------------------------------
@@ -256,8 +263,8 @@ void UMyraAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
 
 // ------------------------------------------------
 //  Attribute Change Broadcasting
-//  NotifyAttributeChanged is called by UGASAttributeSet::PostAttributeChange,
-//  which IS a valid UAttributeSet virtual. The AttributeSet calls this method
+//  NotifyAttributeChanged is called by UMyraBaseAttributeSet::PostAttributeChange,
+//  which is a valid UAttributeSet virtual. The AttributeSet calls this method
 //  to push the event up to the ASC's Blueprint-visible delegate.
 // ------------------------------------------------
 
@@ -270,4 +277,50 @@ void UMyraAbilitySystemComponent::NotifyAttributeChanged(
 void UMyraAbilitySystemComponent::NotifyGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)
 {
 	OnGameplayEffectAttributeExecuted.Broadcast(Info);
+}
+
+void UMyraAbilitySystemComponent::EnsureDefaultAttributeSet()
+{
+	if (HasDefaultAttributeSet())
+	{
+		return;
+	}
+
+	AActor* MyraOwnerActor = GetOwner();
+	if (!MyraOwnerActor)
+	{
+		return;
+	}
+
+	TArray<UObject*> OwnerSubobjects;
+	GetObjectsWithOuter(MyraOwnerActor, OwnerSubobjects, false);
+
+	for (UObject* Object : OwnerSubobjects)
+	{
+		if (!Object)
+		{
+			continue;
+		}
+
+		if (Object->HasAnyFlags(RF_DefaultSubObject))
+		{
+			if (UMyraDefaultAttributeSet* DefaultAttributeSet = Cast<UMyraDefaultAttributeSet>(Object))
+			{
+				AddAttributeSetSubobject(DefaultAttributeSet);
+				return;
+			}
+		}
+	}
+
+	UMyraDefaultAttributeSet* DefaultAttributeSet = NewObject<UMyraDefaultAttributeSet>(
+		MyraOwnerActor,
+		UMyraDefaultAttributeSet::StaticClass(),
+		TEXT("MyraDefaultAttributeSet"));
+
+	AddAttributeSetSubobject(DefaultAttributeSet);
+}
+
+bool UMyraAbilitySystemComponent::HasDefaultAttributeSet() const
+{
+	return GetSet<UMyraDefaultAttributeSet>() != nullptr;
 }

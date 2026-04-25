@@ -7,7 +7,7 @@
 #include "MyraPlayerState.generated.h"
 
 class UMyraAbilitySystemComponent;
-class UMyraAttributeSet;
+class UMyraDefaultAttributeSet;
 class UMyraAbilitySet;
 
 /**
@@ -46,7 +46,7 @@ public:
 
 	/** Convenience access to the base attribute set. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra ")
-	UMyraAttributeSet* GetBaseAttributeSet() const { return AttributeSet; }
+	UMyraDefaultAttributeSet* GetBaseAttributeSet() const { return AttributeSet; }
 
 	/** Returns current health from the base attribute set. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
@@ -98,7 +98,7 @@ protected:
 	 * through your own attribute sets via UMyraAbilitySet.
 	 */
 	UPROPERTY()
-	TObjectPtr<UMyraAttributeSet> AttributeSet;
+	TObjectPtr<UMyraDefaultAttributeSet> AttributeSet;
 
 //CLAUDE: 
 //private:
