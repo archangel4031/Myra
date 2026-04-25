@@ -1,4 +1,6 @@
 #### Changelog
+- Ver 2.0.0-alpha-7
+    - Changed Attribute Set Class hierarchy
 - Ver 2.0.0-alpha-6
     - Added BP notifiers for Gameplay Effect changes
     - Fixed issue of Duplicate Default Attributes
