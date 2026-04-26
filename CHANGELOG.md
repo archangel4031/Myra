@@ -1,4 +1,6 @@
 #### Changelog
+- Ver 2.0.0-beta-1
+    - Moved Ability Info up to ASC for easy access in Blueprints
 - Ver 2.0.0-alpha-7
     - Changed Attribute Set Class hierarchy
 - Ver 2.0.0-alpha-6
