@@ -324,3 +324,142 @@ bool UMyraAbilitySystemComponent::HasDefaultAttributeSet() const
 {
 	return GetSet<UMyraDefaultAttributeSet>() != nullptr;
 }
+
+// ------------------------------------------------
+//  Ability Info Queries (for UI)
+// ------------------------------------------------
+
+float UMyraAbilitySystemComponent::GetAbilityCostByInputTag(FGameplayTag InputTag) const
+{
+	if (!InputTag.IsValid()) { return 0.f; }
+
+	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
+	{
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) { continue; }
+
+		// Spec.Ability is the CDO — cost reads from the GE CDO so this is safe.
+		if (const UMyraGameplayAbility* Ability = Cast<UMyraGameplayAbility>(Spec.Ability))
+		{
+			return Ability->GetAbilityCostAmount();
+		}
+	}
+	return 0.f;
+}
+
+float UMyraAbilitySystemComponent::GetAbilityCooldownDurationByInputTag(FGameplayTag InputTag) const
+{
+	if (!InputTag.IsValid()) { return 0.f; }
+
+	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
+	{
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) { continue; }
+
+		// Duration reads from the GE CDO — no per-instance state needed.
+		if (const UMyraGameplayAbility* Ability = Cast<UMyraGameplayAbility>(Spec.Ability))
+		{
+			return Ability->GetAbilityCooldownDuration();
+		}
+	}
+	return 0.f;
+}
+
+float UMyraAbilitySystemComponent::GetAbilityCooldownRemainingByInputTag(FGameplayTag InputTag) const
+{
+	if (!InputTag.IsValid()) { return 0.f; }
+
+	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
+	{
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) { continue; }
+
+		const UMyraGameplayAbility* AbilityCDO = Cast<UMyraGameplayAbility>(Spec.Ability);
+		if (!AbilityCDO) { continue; }
+
+		// Prefer the live instance — GetAbilityCooldownTimeRemaining() needs CurrentActorInfo
+		// which is only set on the instance, not the CDO.
+		if (UGameplayAbility* Instance = Spec.GetPrimaryInstance())
+		{
+			if (UMyraGameplayAbility* MyraInstance = Cast<UMyraGameplayAbility>(Instance))
+			{
+				return MyraInstance->GetAbilityCooldownTimeRemaining();
+			}
+		}
+
+		// Fallback (ability not yet activated / no instance yet):
+		// replicate the query directly against the ASC using the CDO's cooldown tags.
+		const FGameplayTagContainer* CooldownTags = AbilityCDO->GetCooldownTags();
+		if (!CooldownTags || CooldownTags->IsEmpty()) { return 0.f; }
+
+		FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(*CooldownTags);
+		TArray<float> Durations = GetActiveEffectsTimeRemaining(Query);
+		if (Durations.Num() > 0)
+		{
+			Durations.Sort();
+			return Durations.Last();
+		}
+		return 0.f;
+	}
+	return 0.f;
+}
+
+// ------------------------------------------------
+//  Cooldown Queries — by Granted Tag
+// ------------------------------------------------
+
+float UMyraAbilitySystemComponent::GetCooldownRemainingByGrantedTag(FGameplayTag GrantedTag) const
+{
+	if (!GrantedTag.IsValid()) { return 0.f; }
+
+	FGameplayTagContainer Tags;
+	Tags.AddTag(GrantedTag);
+	return GetCooldownRemainingByGrantedTags(Tags);
+}
+
+float UMyraAbilitySystemComponent::GetCooldownRemainingByGrantedTags(const FGameplayTagContainer& GrantedTags) const
+{
+	if (GrantedTags.IsEmpty()) { return 0.f; }
+
+	// MakeQuery_MatchAnyOwningTags finds active effects that GRANT any of these
+	// tags to the owner — the same mechanism GAS uses internally for cooldowns.
+	const FGameplayEffectQuery Query =
+		FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(GrantedTags);
+
+	TArray<float> Durations = GetActiveEffectsTimeRemaining(Query);
+	if (Durations.Num() > 0)
+	{
+		Durations.Sort();
+		return Durations.Last(); // longest remaining, consistent with GetAbilityCooldownTimeRemaining
+	}
+	return 0.f;
+}
+
+// ------------------------------------------------
+//  Cooldown Queries — by Asset Tag
+// ------------------------------------------------
+
+float UMyraAbilitySystemComponent::GetCooldownRemainingByAssetTag(FGameplayTag AssetTag) const
+{
+	if (!AssetTag.IsValid()) { return 0.f; }
+
+	FGameplayTagContainer Tags;
+	Tags.AddTag(AssetTag);
+	return GetCooldownRemainingByAssetTags(Tags);
+}
+
+float UMyraAbilitySystemComponent::GetCooldownRemainingByAssetTags(const FGameplayTagContainer& AssetTags) const
+{
+	if (AssetTags.IsEmpty()) { return 0.f; }
+
+	// MakeQuery_MatchAnyEffectTags finds active effects whose own asset tag
+	// container contains any of the given tags. These tags are NOT on the owner —
+	// they identify the GE class itself (same as EffectTags in FMyraGEExecutedInfo).
+	const FGameplayEffectQuery Query =
+		FGameplayEffectQuery::MakeQuery_MatchAnyEffectTags(AssetTags);
+
+	TArray<float> Durations = GetActiveEffectsTimeRemaining(Query);
+	if (Durations.Num() > 0)
+	{
+		Durations.Sort();
+		return Durations.Last();
+	}
+	return 0.f;
+}

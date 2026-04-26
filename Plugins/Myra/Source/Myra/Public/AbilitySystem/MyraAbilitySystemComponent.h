@@ -175,6 +175,69 @@ public:
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 
 	// ------------------------------------------------
+	//  Ability Info Queries (for UI)
+	// ------------------------------------------------
+
+	/**
+	 * Returns the flat cost magnitude for the ability bound to the given input tag.
+	 * Reads the first non-zero modifier on its CostGameplayEffect.
+	 * Returns 0 if no ability matches or no cost is set.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetAbilityCostByInputTag(FGameplayTag InputTag) const;
+
+	/**
+	 * Returns the total cooldown duration for the ability bound to the given input tag.
+	 * Returns 0 if no ability matches or no cooldown is set.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetAbilityCooldownDurationByInputTag(FGameplayTag InputTag) const;
+
+	/**
+	 * Returns how many seconds remain on the cooldown for the ability bound to the given input tag.
+	 * Returns 0 if the ability is not currently on cooldown or not found.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetAbilityCooldownRemainingByInputTag(FGameplayTag InputTag) const;
+
+	// ---- By Cooldown GE Granted Tag(s) ----------------------------------------
+	// "Granted tags" are tags the cooldown GE applies to the owner while active.
+	// This is the standard GAS cooldown-tag mechanism (what GetCooldownTags() returns).
+
+	/**
+	 * Returns seconds remaining on any active cooldown effect that grants the given tag
+	 * to the owning actor. Returns 0 if no such effect is active.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetCooldownRemainingByGrantedTag(FGameplayTag GrantedTag) const;
+
+	/**
+	 * Same as above, but matches effects that grant ANY tag in the container.
+	 * Useful when a cooldown GE grants several tags and you want to match any one.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetCooldownRemainingByGrantedTags(const FGameplayTagContainer& GrantedTags) const;
+
+
+	// ---- By Cooldown GE Asset Tag(s) -------------------------------------------
+	// "Asset tags" live on the GE class itself (the GameplayEffectAssetTag container).
+	// They identify the effect but are NOT applied to the owner.
+	// These are the tags exposed as EffectTags in FMyraGEExecutedInfo.
+
+	/**
+	 * Returns seconds remaining on any active cooldown effect whose asset tags
+	 * contain the given tag. Returns 0 if no such effect is active.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetCooldownRemainingByAssetTag(FGameplayTag AssetTag) const;
+
+	/**
+	 * Same as above, but matches effects whose asset tags contain ANY tag in the container.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
+	float GetCooldownRemainingByAssetTags(const FGameplayTagContainer& AssetTags) const;
+
+	// ------------------------------------------------
 	//  Events
 	// ------------------------------------------------
 
