@@ -279,6 +279,14 @@ void UMyraAbilitySystemComponent::NotifyGameplayEffectExecuted(const FMyraGEExec
 	OnGameplayEffectAttributeExecuted.Broadcast(Info);
 }
 
+float UMyraAbilitySystemComponent::ModifyDamageBeforeApplication_Implementation(float InDamage)
+{
+	// Default passthrough: apply the full damage amount to Health.
+	// Blueprint subclasses can override this to absorb damage into Shield (or any
+	// other buffer) before it reaches Health.
+	return InDamage;
+}
+
 void UMyraAbilitySystemComponent::EnsureDefaultAttributeSet()
 {
 	if (HasDefaultAttributeSet())

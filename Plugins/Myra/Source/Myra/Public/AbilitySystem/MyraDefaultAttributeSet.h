@@ -5,6 +5,9 @@
 #include "AbilitySystem/MyraBaseAttributeSet.h"
 #include "MyraDefaultAttributeSet.generated.h"
 
+
+class UMyraAbilitySystemComponent;
+
 /**
  * Built-in default attribute set for Myra.
  *

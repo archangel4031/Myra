@@ -5,6 +5,7 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "Tags/MyraNativeGameplayTags.h"
+#include "AbilitySystem/MyraAbilitySystemComponent.h"
 
 UMyraDefaultAttributeSet::UMyraDefaultAttributeSet()
 {
@@ -44,17 +45,31 @@ void UMyraDefaultAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 
 		if (LocalDamage > 0.f)
 		{
-			const float NewHealth = FMath::Clamp(GetHealth() - LocalDamage, 0.f, GetMaxHealth());
-			SetHealth(NewHealth);
-
-			if (NewHealth <= 0.f)
+			// Give Blueprint a chance to route damage before it reaches Health.
+			// The default implementation is a passthrough (returns LocalDamage unchanged).
+			// A Blueprint subclass of UMyraAbilitySystemComponent can override
+			// ModifyDamageBeforeApplication to absorb some or all damage into Shield first
+			// and return only the remainder to be applied here.
+			float FinalDamage = LocalDamage;
+			if (UMyraAbilitySystemComponent* MyraASC = Cast<UMyraAbilitySystemComponent>(ASC))
 			{
-				FGameplayEventData EventData;
-				EventData.EventMagnitude = LocalDamage;
-				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
-					ASC->GetAvatarActor(),
-					MyraGameplayTags::Myra_GameEvent_Death,
-					EventData);
+				FinalDamage = MyraASC->ModifyDamageBeforeApplication(LocalDamage);
+			}
+
+			if (FinalDamage > 0.f)
+			{
+				const float NewHealth = FMath::Clamp(GetHealth() - FinalDamage, 0.f, GetMaxHealth());
+				SetHealth(NewHealth);
+
+				if (NewHealth <= 0.f)
+				{
+					FGameplayEventData EventData;
+					EventData.EventMagnitude = FinalDamage;
+					UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+						ASC->GetAvatarActor(),
+						MyraGameplayTags::Myra_GameEvent_Death,
+						EventData);
+				}
 			}
 		}
 	}

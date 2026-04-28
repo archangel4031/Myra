@@ -271,6 +271,34 @@ public:
 	 */
 	void NotifyGameplayEffectExecuted(const FMyraGEExecutedInfo& Info);
 
+	// ------------------------------------------------
+	//  Damage Pipeline Hook
+	// ------------------------------------------------
+
+	/**
+	 * Called inside PostGameplayEffectExecute immediately after the Damage meta attribute
+	 * is consumed, but BEFORE any of it is applied to Health.
+	 *
+	 * Override this in a Blueprint subclass of UMyraAbilitySystemComponent to implement
+	 * custom damage routing. The most common use case is a Shield that absorbs damage
+	 * before it reaches Health:
+	 *
+	 *   1. Read your Shield attribute value.
+	 *   2. Calculate how much damage the Shield can absorb  (min of Shield and InDamage).
+	 *   3. Reduce Shield by that amount (via SetAttributeValue or a GE).
+	 *   4. Return  InDamage - Absorbed  so only the remainder hits Health.
+	 *      Return 0 if the Shield absorbed everything.
+	 *
+	 * The default implementation is a passthrough — it returns InDamage unchanged,
+	 * so Health is reduced by the full amount as before.
+	 *
+	 * @param InDamage  Raw incoming damage (always > 0 when this is called).
+	 * @return          Damage amount that should be applied to Health after routing.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Damage")
+	float ModifyDamageBeforeApplication(float InDamage);
+	virtual float ModifyDamageBeforeApplication_Implementation(float InDamage);
+
 protected:
 
 
