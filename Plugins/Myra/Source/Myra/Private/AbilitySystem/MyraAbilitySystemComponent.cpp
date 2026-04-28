@@ -4,6 +4,8 @@
 #include "DataAssets/MyraAbilitySet.h"
 #include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
+#include "Character/MyraCharacter.h"
+#include "Character/MyraPlayerState.h"
 #include "AttributeSet.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -357,9 +359,27 @@ void UMyraAbilitySystemComponent::NotifyGameplayEffectExecuted(const FMyraGEExec
 
 float UMyraAbilitySystemComponent::ModifyDamageBeforeApplication_Implementation(float InDamage)
 {
-	// Default passthrough: apply the full damage amount to Health.
-	// Blueprint subclasses can override this to absorb damage into Shield (or any
-	// other buffer) before it reaches Health.
+	// Prefer the avatar Character so damage routing can follow the currently possessed pawn.
+	// If no Character override is present, fall back to the owning PlayerState.
+	float OutDamage = InDamage;
+
+	if (AMyraCharacter* MyraCharacter = Cast<AMyraCharacter>(GetAvatarActor()))
+	{
+		if (MyraCharacter->ModifyDamageBeforeApplication(InDamage, OutDamage))
+		{
+			return OutDamage;
+		}
+	}
+
+	if (AMyraPlayerState* MyraPlayerState = Cast<AMyraPlayerState>(GetOwnerActor()))
+	{
+		if (MyraPlayerState->ModifyDamageBeforeApplication(InDamage, OutDamage))
+		{
+			return OutDamage;
+		}
+	}
+
+	// Final fallback: apply the full damage amount to Health.
 	return InDamage;
 }
 

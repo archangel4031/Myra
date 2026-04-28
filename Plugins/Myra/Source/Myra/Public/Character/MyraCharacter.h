@@ -109,6 +109,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	float GetHealthPercent() const;
 
+	/**
+	 * Blueprint hook for custom damage routing before Health is reduced.
+	 * When using a PlayerState ASC, the Character override is checked first so pawn-specific
+	 * logic (for example a temporary shield on the current body) can take precedence.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Damage")
+	bool ModifyDamageBeforeApplication(float InDamage, float& OutDamage);
+	virtual bool ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage);
+
 	// ------------------------------------------------
 	//  State Queries
 	// ------------------------------------------------

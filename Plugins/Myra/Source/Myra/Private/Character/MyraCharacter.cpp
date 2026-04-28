@@ -331,6 +331,14 @@ float AMyraCharacter::GetHealthPercent() const
 	return (Max > 0.f) ? (GetHealth() / Max) : 0.f;
 }
 
+bool AMyraCharacter::ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage)
+{
+	// Returning false means "not handled here", so PlayerState-owned ASCs can still
+	// fall back to the PlayerState override when the Character does not customize routing.
+	OutDamage = InDamage;
+	return false;
+}
+
 // ------------------------------------------------
 //  State Queries
 // ------------------------------------------------

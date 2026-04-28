@@ -60,6 +60,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	float GetHealthPercent() const;
 
+	/**
+	 * Blueprint hook for custom damage routing when this PlayerState owns the active ASC.
+	 * Character overrides take priority when both are present; this serves as the fallback.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Damage")
+	bool ModifyDamageBeforeApplication(float InDamage, float& OutDamage);
+	virtual bool ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage);
+
 	// ------------------------------------------------
 	//  Configuration (set these in your subclass defaults)
 	// ------------------------------------------------

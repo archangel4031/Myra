@@ -44,6 +44,14 @@ float AMyraPlayerState::GetHealthPercent() const
 	return (Max > 0.f) ? (GetHealth() / Max) : 0.f;
 }
 
+bool AMyraPlayerState::ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage)
+{
+	// Returning false means "not handled here", so the ASC can continue to other
+	// routing sources or fall back to raw Health damage.
+	OutDamage = InDamage;
+	return false;
+}
+
 void AMyraPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
