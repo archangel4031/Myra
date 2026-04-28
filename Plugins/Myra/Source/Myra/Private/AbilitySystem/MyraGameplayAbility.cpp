@@ -73,6 +73,11 @@ UMyraAbilitySystemComponent* UMyraGameplayAbility::GetMyraAbilitySystemComponent
 	return Cast<UMyraAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
 }
 
+bool UMyraGameplayAbility::HasAbilityTag(FGameplayTag AbilityTag) const
+{
+	return AbilityTag.IsValid() && GetAssetTags().HasTag(AbilityTag);
+}
+
 // ------------------------------------------------
 //  Cost & Cooldown
 // ------------------------------------------------

@@ -10,6 +10,7 @@ class UMyraGameplayAbility;
 class UMyraAbilitySet;
 class UMyraDefaultAttributeSet;
 class UAttributeSet;
+class UGameplayAbility;
 
 /**
  * FMyraGEExecutedInfo
@@ -173,6 +174,22 @@ public:
 	/** Forwards an input release tag to any active matching abilities. */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
 	void AbilityInputTagReleased(FGameplayTag InputTag);
+
+	/**
+	 * Changes the level of every granted ability spec whose ability class matches the provided class.
+	 * Matching uses IsA, so passing a parent class updates derived abilities too.
+	 * Returns how many granted specs were updated.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
+	int32 SetGrantedAbilityLevelByClass(TSubclassOf<UGameplayAbility> AbilityClass, int32 NewLevel);
+
+	/**
+	 * Changes the level of every granted ability spec whose gameplay ability asset tags contain the provided tag.
+	 * This checks the GA asset tag container exposed by UGameplayAbility::GetAssetTags().
+	 * Returns how many granted specs were updated.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
+	int32 SetGrantedAbilityLevelByAbilityTag(FGameplayTag AbilityTag, int32 NewLevel);
 
 	// ------------------------------------------------
 	//  Ability Info Queries (for UI)

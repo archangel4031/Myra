@@ -261,6 +261,82 @@ void UMyraAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
 	}
 }
 
+int32 UMyraAbilitySystemComponent::SetGrantedAbilityLevelByClass(
+	TSubclassOf<UGameplayAbility> AbilityClass,
+	int32 NewLevel)
+{
+	if (!IsOwnerActorAuthoritative())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Myra: SetGrantedAbilityLevelByClass must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
+		return 0;
+	}
+
+	UClass* AbilityClassPtr = AbilityClass.Get();
+	if (!AbilityClassPtr)
+	{
+		return 0;
+	}
+
+	int32 UpdatedSpecCount = 0;
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		if (!AbilitySpec.Ability || !AbilitySpec.Ability->IsA(AbilityClassPtr))
+		{
+			continue;
+		}
+
+		if (AbilitySpec.Level == NewLevel)
+		{
+			continue;
+		}
+
+		AbilitySpec.Level = NewLevel;
+		MarkAbilitySpecDirty(AbilitySpec);
+		++UpdatedSpecCount;
+	}
+
+	return UpdatedSpecCount;
+}
+
+int32 UMyraAbilitySystemComponent::SetGrantedAbilityLevelByAbilityTag(
+	FGameplayTag AbilityTag,
+	int32 NewLevel)
+{
+	if (!IsOwnerActorAuthoritative())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Myra: SetGrantedAbilityLevelByAbilityTag must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
+		return 0;
+	}
+
+	if (!AbilityTag.IsValid())
+	{
+		return 0;
+	}
+
+	int32 UpdatedSpecCount = 0;
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		const UMyraGameplayAbility* MyraAbility = Cast<UMyraGameplayAbility>(AbilitySpec.Ability);
+		if (!MyraAbility || !MyraAbility->HasAbilityTag(AbilityTag))
+		{
+			continue;
+		}
+
+		if (AbilitySpec.Level == NewLevel)
+		{
+			continue;
+		}
+
+		AbilitySpec.Level = NewLevel;
+		MarkAbilitySpecDirty(AbilitySpec);
+		++UpdatedSpecCount;
+	}
+
+	return UpdatedSpecCount;
+}
+
 // ------------------------------------------------
 //  Attribute Change Broadcasting
 //  NotifyAttributeChanged is called by UMyraBaseAttributeSet::PostAttributeChange,

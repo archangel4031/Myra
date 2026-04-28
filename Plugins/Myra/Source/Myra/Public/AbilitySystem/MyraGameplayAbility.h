@@ -87,6 +87,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
 	UMyraAbilitySystemComponent* GetMyraAbilitySystemComponent() const;
 
+	/** Returns true if this ability asset tags container includes the provided gameplay tag. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
+	bool HasAbilityTag(FGameplayTag AbilityTag) const;
+
 	// ------------------------------------------------
 	//  Cost & Cooldown Info (for UI)
 	// ------------------------------------------------
