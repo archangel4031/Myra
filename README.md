@@ -30,7 +30,7 @@ Refer to [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to use 
 
 Myra is in beta phase of development. It is not recommended to use Myra in production just yet. You are encouraged to contribute to the development of the new plugin and provide feedback.
 
-The default branch is now *main* instead of *master*. GAS Associate is deprecated and can be found on the *master* branch.
+The default branch is now *main* instead of *master*. GAS Associate is deprecated and can be found on the *master* branch. GAS Associate is _NOT_ compatible with Myra.
 
 ---
 
@@ -42,6 +42,10 @@ This is the source code for for the Plugin Myra, that is supposed to make your l
 ### Information:
 
 The plugin contains all the necessary C++ files required to make Gameplay Ability System work. This plugin allows you to jump quickly into GAS without needing to manually create each and every C++ file.
+
+### Download:
+
+Download the latest version from the [Release Page](https://github.com/archangel4031/Myra/releases)
 
 
 ### Tutorial Series (Old but still mostly valid):
@@ -63,4 +67,8 @@ _Coming Soon_
 
 #### Changelog
 
-See [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)
+- Ver 2.0.0-beta-2
+    - Added Blueprint override function for Damage logic in case of Custom Shield Attribute (in Player State and Character Class)
+    - Added Blueprint function to change Ability Level after it has already been granted (Set by Tag or Class)
+
+For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)
