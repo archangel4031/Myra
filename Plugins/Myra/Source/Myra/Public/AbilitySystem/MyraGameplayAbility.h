@@ -79,8 +79,7 @@ public:
 	// ------------------------------------------------
 
 	/** Returns the owning character cast to AMyraCharacter. Can be null. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability",
-		meta = (ExpandBoolAsExecs = "ReturnValue"))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
 	AMyraCharacter* GetMyraCharacter() const;
 
 	/** Returns the owning ASC. */

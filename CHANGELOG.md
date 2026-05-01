@@ -1,4 +1,6 @@
 #### Changelog
+- Ver 2.0.0-beta-3
+    - Fixed _Get Myra Character_ in Gameplay Ability Class
 - Ver 2.0.0-beta-2
     - Added Blueprint override function for Damage logic in case of Custom Shield Attribute (in Player State and Character Class)
     - Added Blueprint function to change Ability Level after it has already been granted (Set by Tag or Class)
