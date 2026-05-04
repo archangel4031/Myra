@@ -62,7 +62,7 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
 
 ### Video:
 
-_Coming Soon_
+[Myra (formerly GAS Associate) Quick Start | Unreal Engine 5](https://youtu.be/NjrWZkf6zGQ)
 
 
 #### Changelog
