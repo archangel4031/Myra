@@ -4,8 +4,8 @@
 #include "DataAssets/MyraAbilitySet.h"
 #include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
-#include "Character/MyraCharacter.h"
 #include "Character/MyraPlayerState.h"
+#include "Pawn/MyraPawnAbilityComponent.h"
 #include "AttributeSet.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -38,6 +38,13 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 	// Don't grant the same set twice
 	if (GrantedAbilitySets.Contains(AbilitySet))
 	{
+		UE_LOG(
+			LogTemp,
+			Warning,
+			TEXT("Myra: Attempted to grant duplicate AbilitySet '%s' to ASC '%s' from '%s'. Ignoring."),
+			*GetNameSafe(AbilitySet),
+			*GetNameSafe(GetOwner()),
+			*GetNameSafe(SourceObject));
 		return;
 	}
 
@@ -46,6 +53,17 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 		GrantedAbilityHandles.FindOrAdd(AbilitySet),
 		GrantedEffectHandles.FindOrAdd(AbilitySet),
 		GrantedAttributeSetHandles.FindOrAdd(AbilitySet));
+
+	UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("Myra: Granted AbilitySet '%s' to ASC '%s' from '%s'. Granted %d abilities, %d effects, and %d attribute sets."),
+		*GetNameSafe(AbilitySet),
+		*GetNameSafe(GetOwner()),
+		*GetNameSafe(SourceObject),
+		GrantedAbilityHandles[AbilitySet].Num(),
+		GrantedEffectHandles[AbilitySet].Num(),
+		GrantedAttributeSetHandles[AbilitySet].Num());
 }
 
 void UMyraAbilitySystemComponent::RemoveAbilitySet(UMyraAbilitySet* AbilitySet)
@@ -359,13 +377,14 @@ void UMyraAbilitySystemComponent::NotifyGameplayEffectExecuted(const FMyraGEExec
 
 float UMyraAbilitySystemComponent::ModifyDamageBeforeApplication_Implementation(float InDamage)
 {
-	// Prefer the avatar Character so damage routing can follow the currently possessed pawn.
-	// If no Character override is present, fall back to the owning PlayerState.
+	// Prefer the active pawn avatar so damage routing follows the currently possessed body.
+	// If no pawn-specific override is present, fall back to the owning PlayerState.
 	float OutDamage = InDamage;
 
-	if (AMyraCharacter* MyraCharacter = Cast<AMyraCharacter>(GetAvatarActor()))
+	if (const UMyraPawnAbilityComponent* PawnAbilityComponent =
+		UMyraPawnAbilityComponent::FindPawnAbilityComponent(GetAvatarActor()))
 	{
-		if (MyraCharacter->ModifyDamageBeforeApplication(InDamage, OutDamage))
+		if (PawnAbilityComponent->ModifyDamageBeforeApplication(InDamage, OutDamage))
 		{
 			return OutDamage;
 		}

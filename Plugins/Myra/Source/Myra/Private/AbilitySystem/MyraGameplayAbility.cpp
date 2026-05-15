@@ -1,9 +1,10 @@
 // Copyright Myra . All Rights Reserved.
 
 #include "AbilitySystem/MyraGameplayAbility.h"
-#include "Character/MyraCharacter.h"
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GameFramework/Pawn.h"
+#include "Pawn/MyraPawnAbilityComponent.h"
 
 UMyraGameplayAbility::UMyraGameplayAbility()
 {
@@ -49,11 +50,13 @@ bool UMyraGameplayAbility::CanActivateAbility(
 		return false;
 	}
 
-	// Check dead state — dead characters can't activate abilities.
-	const AMyraCharacter* Character = Cast<AMyraCharacter>(ActorInfo->AvatarActor.Get());
-	if (Character && Character->IsDead())
+	if (const UMyraPawnAbilityComponent* PawnAbilityComponent =
+		UMyraPawnAbilityComponent::FindPawnAbilityComponent(ActorInfo->AvatarActor.Get()))
 	{
-		return false;
+		if (!PawnAbilityComponent->IsAlive())
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -63,14 +66,19 @@ bool UMyraGameplayAbility::CanActivateAbility(
 //  Typed Accessors
 // ------------------------------------------------
 
-AMyraCharacter* UMyraGameplayAbility::GetMyraCharacter() const
+APawn* UMyraGameplayAbility::GetMyraPawn() const
 {
-	return Cast<AMyraCharacter>(GetAvatarActorFromActorInfo());
+	return Cast<APawn>(GetAvatarActorFromActorInfo());
 }
 
 UMyraAbilitySystemComponent* UMyraGameplayAbility::GetMyraAbilitySystemComponent() const
 {
 	return Cast<UMyraAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+}
+
+UMyraPawnAbilityComponent* UMyraGameplayAbility::GetMyraPawnAbilityComponent() const
+{
+	return UMyraPawnAbilityComponent::FindPawnAbilityComponent(GetAvatarActorFromActorInfo());
 }
 
 bool UMyraGameplayAbility::HasAbilityTag(FGameplayTag AbilityTag) const
@@ -145,30 +153,3 @@ float UMyraGameplayAbility::GetAbilityCooldownTimeRemaining() const
 	return 0.f;
 }
 
-// ------------------------------------------------
-//  Animation
-// ------------------------------------------------
-
-void UMyraGameplayAbility::PlayAbilityMontage(UAnimMontage* Montage, float PlayRate, FName StartSection)
-{
-	if (!Montage)
-	{
-		return;
-	}
-
-	AMyraCharacter* Character = GetMyraCharacter();
-	if (!Character)
-	{
-		return;
-	}
-
-	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	if (AnimInstance)
-	{
-		AnimInstance->Montage_Play(Montage, PlayRate);
-		if (StartSection != NAME_None)
-		{
-			AnimInstance->Montage_JumpToSection(StartSection, Montage);
-		}
-	}
-}

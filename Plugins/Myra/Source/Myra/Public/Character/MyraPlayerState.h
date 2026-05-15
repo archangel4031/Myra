@@ -20,11 +20,11 @@ class UMyraAbilitySet;
  * ASC on PlayerState keeps everything intact across respawns and pawn swaps.
  *
  * For single-player games you can ignore this and put the ASC on your Character
- * directly — AMyraCharacter handles both cases.
+ * directly — Myra pawn avatars handle both cases.
  *
  * SETUP:
  *   1. Set your Game Mode's PlayerStateClass to this class (or a subclass).
- *   2. Set your Character's bUsePlayerStateASC = true (default).
+ *   2. Set your pawn avatar's PawnAbilityComponent.bUsePlayerStateASC = true (default).
  *   3. Add your AbilitySets to DefaultAbilitySets on this PlayerState.
  */
 UCLASS()

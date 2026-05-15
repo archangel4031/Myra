@@ -1,13 +1,13 @@
 // Copyright Myra . All Rights Reserved.
 
-#include "Character/MyraCharacter.h"
+#include "Pawn/MyraPawn.h"
 #include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "Character/MyraPawnExtensionComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
-AMyraCharacter::AMyraCharacter()
+AMyraPawn::AMyraPawn()
 {
 	OwnedAbilitySystemComponent = CreateDefaultSubobject<UMyraAbilitySystemComponent>(TEXT("OwnedAbilitySystemComponent"));
 	OwnedAbilitySystemComponent->SetIsReplicated(true);
@@ -15,12 +15,12 @@ AMyraCharacter::AMyraCharacter()
 	PawnExtensionComponent = CreateDefaultSubobject<UMyraPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
 }
 
-UAbilitySystemComponent* AMyraCharacter::GetAbilitySystemComponent() const
+UAbilitySystemComponent* AMyraPawn::GetAbilitySystemComponent() const
 {
 	return GetMyraAbilitySystemComponent();
 }
 
-void AMyraCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+void AMyraPawn::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
 	if (const UMyraAbilitySystemComponent* AbilitySystemComponent = GetMyraAbilitySystemComponent())
 	{
@@ -28,52 +28,52 @@ void AMyraCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) c
 	}
 }
 
-UMyraAbilitySystemComponent* AMyraCharacter::GetMyraAbilitySystemComponent() const
+UMyraAbilitySystemComponent* AMyraPawn::GetMyraAbilitySystemComponent() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->GetMyraAbilitySystemComponent() : nullptr;
 }
 
-const UMyraDefaultAttributeSet* AMyraCharacter::GetBaseAttributeSet() const
+const UMyraDefaultAttributeSet* AMyraPawn::GetBaseAttributeSet() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->GetBaseAttributeSet() : nullptr;
 }
 
-float AMyraCharacter::GetHealth() const
+float AMyraPawn::GetHealth() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->GetHealth() : 0.f;
 }
 
-float AMyraCharacter::GetMaxHealth() const
+float AMyraPawn::GetMaxHealth() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->GetMaxHealth() : 1.f;
 }
 
-float AMyraCharacter::GetHealthPercent() const
+float AMyraPawn::GetHealthPercent() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->GetHealthPercent() : 0.f;
 }
 
-bool AMyraCharacter::IsAlive() const
+bool AMyraPawn::IsAlive() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->IsAlive() : false;
 }
 
-bool AMyraCharacter::IsUsingPlayerStateAbilitySystem() const
+bool AMyraPawn::IsUsingPlayerStateAbilitySystem() const
 {
 	return PawnAbilityComponent ? PawnAbilityComponent->IsUsingPlayerStateAbilitySystem() : false;
 }
 
-bool AMyraCharacter::ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage)
+bool AMyraPawn::ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage)
 {
 	OutDamage = InDamage;
 	return false;
 }
 
-void AMyraCharacter::OnGameplayEffectExecuted_Implementation(const FMyraGEExecutedInfo& Info)
+void AMyraPawn::OnGameplayEffectExecuted_Implementation(const FMyraGEExecutedInfo& Info)
 {
 }
 
-void AMyraCharacter::BeginPlay()
+void AMyraPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -83,7 +83,7 @@ void AMyraCharacter::BeginPlay()
 	}
 }
 
-void AMyraCharacter::PossessedBy(AController* NewController)
+void AMyraPawn::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
@@ -93,7 +93,7 @@ void AMyraCharacter::PossessedBy(AController* NewController)
 	}
 }
 
-void AMyraCharacter::UnPossessed()
+void AMyraPawn::UnPossessed()
 {
 	if (PawnAbilityComponent)
 	{
@@ -103,7 +103,7 @@ void AMyraCharacter::UnPossessed()
 	Super::UnPossessed();
 }
 
-void AMyraCharacter::OnRep_PlayerState()
+void AMyraPawn::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
@@ -113,7 +113,7 @@ void AMyraCharacter::OnRep_PlayerState()
 	}
 }
 
-void AMyraCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void AMyraPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (PawnAbilityComponent)
 	{
@@ -123,7 +123,7 @@ void AMyraCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void AMyraCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMyraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -134,43 +134,50 @@ void AMyraCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 }
 
-void AMyraCharacter::OnAbilitySystemInitialized()
+void AMyraPawn::OnAbilitySystemInitialized()
 {
 }
 
-void AMyraCharacter::OnDeath_Implementation(AActor* Killer)
+void AMyraPawn::OnDeath_Implementation(AActor* Killer)
 {
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
+	if (UPrimitiveComponent* RootPrimitiveComponent = Cast<UPrimitiveComponent>(GetRootComponent()))
+	{
+		RootPrimitiveComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	if (UPawnMovementComponent* PawnMovementComponent = GetMovementComponent())
+	{
+		PawnMovementComponent->StopMovementImmediately();
+		PawnMovementComponent->Deactivate();
+	}
 }
 
-void AMyraCharacter::HandleMyraAbilitySystemInitialized()
+void AMyraPawn::HandleMyraAbilitySystemInitialized()
 {
 	OnAbilitySystemInitialized();
 }
 
-void AMyraCharacter::HandleMyraAbilitySystemUninitialized()
+void AMyraPawn::HandleMyraAbilitySystemUninitialized()
 {
 }
 
-void AMyraCharacter::HandleMyraHealthChanged(float OldValue, float NewValue)
+void AMyraPawn::HandleMyraHealthChanged(float OldValue, float NewValue)
 {
 	OnHealthChanged.Broadcast(this, OldValue, NewValue);
 }
 
-bool AMyraCharacter::ModifyMyraDamageBeforeApplication(float InDamage, float& OutDamage)
+bool AMyraPawn::ModifyMyraDamageBeforeApplication(float InDamage, float& OutDamage)
 {
 	return ModifyDamageBeforeApplication(InDamage, OutDamage);
 }
 
-void AMyraCharacter::HandleMyraDeath(AActor* Killer)
+void AMyraPawn::HandleMyraDeath(AActor* Killer)
 {
 	OnDeathEvent.Broadcast(this, Killer);
 	OnDeath(Killer);
 }
 
-void AMyraCharacter::HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)
+void AMyraPawn::HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)
 {
 	OnGameplayEffectExecuted(Info);
 }

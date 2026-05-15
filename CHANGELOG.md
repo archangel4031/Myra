@@ -1,4 +1,10 @@
 #### Changelog
+- Ver 2.0.0-beta-4
+    - Breaking: refactored Myra around a shared pawn GAS architecture
+    - Breaking: added `AMyraPawn` as the generic non-character Myra base class
+    - Breaking: moved shared avatar GAS lifecycle into `UMyraPawnAbilityComponent`
+    - Breaking: removed Character-only assumptions from ability and damage routing helpers
+    - Breaking: removed Myra-specific montage helper from `UMyraGameplayAbility`
 - Ver 2.0.0-beta-3
     - Fixed _Get Myra Character_ in Gameplay Ability Class
 - Ver 2.0.0-beta-2
@@ -26,7 +32,7 @@
     - Fixed Ability Set not Removing Attributes properly
     - Update Wiki Pages
 - Ver 2.0.0-alpha-2
-    - Fixed Gameplay Tags hierarchy. ALl native Tags start with Myra.*
+    - Fixed Gameplay Tags hierarchy. All native Tags start with Myra.*
     - Base Attribute Set only contains Health. Example Data Assets provided for Mana, Stamina etc.
     - Combat Attribute set is now only as a Data Asset. User must generate and compile manually
     - Quailty of Code improvements

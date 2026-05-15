@@ -5,7 +5,6 @@
 #include "AbilitySystemInterface.h"
 #include "Character/MyraInputComponent.h"
 #include "Character/MyraPlayerState.h"
-#include "Character/MyraCharacter.h"
 #include "Components/InputComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "DataAssets/MyraPawnData.h"
@@ -15,6 +14,7 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Pawn/MyraPawnAbilityComponent.h"
 
 UMyraPawnExtensionComponent::UMyraPawnExtensionComponent()
 {
@@ -291,47 +291,24 @@ void UMyraPawnExtensionComponent::TryInitializePlayerInput()
 
 UMyraAbilitySystemComponent* UMyraPawnExtensionComponent::GetMyraAbilitySystemComponent() const
 {
-	//CLADUE: 
+	if (const UMyraPawnAbilityComponent* PawnAbilityComponent =
+		UMyraPawnAbilityComponent::FindPawnAbilityComponent(GetOwner()))
+	{
+		return PawnAbilityComponent->GetMyraAbilitySystemComponent();
+	}
+
 	if (const APawn* Pawn = Cast<APawn>(GetOwner()))
 	{
-		// Only check the PlayerState ASC if the Character actually wants to use it
-		if (const AMyraCharacter* MyraChar = Cast<AMyraCharacter>(Pawn))
+		if (const AMyraPlayerState* PlayerState = Pawn->GetPlayerState<AMyraPlayerState>())
 		{
-			if (MyraChar->bUsePlayerStateASC)
-			{
-				if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
-				{
-					return PS->GetMyraAbilitySystemComponent();
-				}
-			}
+			return PlayerState->GetMyraAbilitySystemComponent();
 		}
 	}
 
-	// Fall back to whatever the pawn itself exposes via the interface
 	if (const IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(GetOwner()))
 	{
 		return Cast<UMyraAbilitySystemComponent>(ASI->GetAbilitySystemComponent());
 	}
 
 	return nullptr;
-
-	// Replaced by above code
-	//if (const APawn* Pawn = Cast<APawn>(GetOwner()))
-	//{
-	//	if (const AMyraPlayerState* PS = Pawn->GetPlayerState<AMyraPlayerState>())
-	//	{
-	//		return PS->GetMyraAbilitySystemComponent();
-	//	}
-	//}
-
-	//if (const IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
-	//{
-	//	if (UMyraAbilitySystemComponent* ASC =
-	//		Cast<UMyraAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent()))
-	//	{
-	//		return ASC;
-	//	}
-	//}	
-
-	//return nullptr;
 }

@@ -47,7 +47,7 @@ public:
 	/**
 	 * Gameplay Effect that initializes the pawn's attributes.
 	 * Use only one attribute initialization path for a given pawn:
-	 * PawnData, the Character's DefaultAttributeInitEffect, or an AbilitySet init effect.
+	 * PawnData, the PawnAbilityComponent's DefaultAttributeInitEffect, or an AbilitySet init effect.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Pawn")
 	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;

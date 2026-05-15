@@ -35,20 +35,20 @@ public:
 	// ------------------------------------------------
 
 	/**
-	 * Default ASC replication mode for new characters.
+	 * Default ASC replication mode for new pawn avatars.
 	 *   Full    — All gameplay effect info replicated to every client. Use for single player.
 	 *   Mixed   — GEs replicated to owner only; tags/predictions replicated to all. Best for most multiplayer games.
-	 *   Minimal — Only tags replicated. Use for AI or characters where clients don't need GE details.
+	 *   Minimal — Only tags replicated. Use for AI or avatars where clients don't need GE details.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Replication")
 	EGameplayEffectReplicationMode DefaultReplicationMode = EGameplayEffectReplicationMode::Mixed;
 
 	// ------------------------------------------------
-	//  PlayerState vs Character ASC
+	//  PlayerState vs Pawn ASC
 	// ------------------------------------------------
 
 	/**
-	 * When true, new AMyraCharacter subclasses default to using the PlayerState ASC.
+	 * When true, new Myra pawn avatars default to using the PlayerState ASC.
 	 * Recommended for multiplayer. Disable for single-player or AI-only projects.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Architecture")
@@ -60,7 +60,7 @@ public:
 
 	/**
 	 * Default Gameplay Effect class used to initialize attributes.
-	 * All new characters will reference this unless they override it with their own.
+	 * All new pawn avatars will reference this unless they override it with their own.
 	 */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Attributes",
 		meta = (AllowedClasses = "/Script/GameplayAbilities.GameplayEffect"))
@@ -70,7 +70,7 @@ public:
 	//  Gameplay Tags
 	// ------------------------------------------------
 
-	/** Gameplay tag applied when a character is dead. Used to block abilities. */
+	/** Gameplay tag applied when a pawn avatar is dead. Used to block abilities. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Tags")
 	FGameplayTag DeadTag;
 

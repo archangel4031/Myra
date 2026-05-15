@@ -2,24 +2,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "GameFramework/Pawn.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagAssetInterface.h"
 #include "Pawn/MyraPawnAbilityComponent.h"
 #include "Pawn/MyraPawnAvatarInterface.h"
-#include "MyraCharacter.generated.h"
+#include "MyraPawn.generated.h"
 
 class UInputComponent;
 class UMyraDefaultAttributeSet;
 class UMyraPawnExtensionComponent;
 
 /**
- * Shared Myra character base.
- * Character-specific behavior lives here, while generic GAS initialization is
- * handled by UMyraPawnAbilityComponent so it can also be reused by AMyraPawn.
+ * Generic Myra pawn base for non-character player avatars such as vehicles,
+ * drones, turrets, and other controllable actors.
  */
-UCLASS(Abstract)
-class MYRA_API AMyraCharacter : public ACharacter,
+UCLASS(Blueprintable)
+class MYRA_API AMyraPawn : public APawn,
 	public IAbilitySystemInterface,
 	public IGameplayTagAssetInterface,
 	public IMyraPawnAvatarInterface
@@ -28,7 +27,7 @@ class MYRA_API AMyraCharacter : public ACharacter,
 
 public:
 
-	AMyraCharacter();
+	AMyraPawn();
 
 	//~ Begin IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;

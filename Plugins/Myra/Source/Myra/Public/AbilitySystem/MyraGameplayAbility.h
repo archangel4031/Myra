@@ -5,8 +5,9 @@
 #include "Abilities/GameplayAbility.h"
 #include "MyraGameplayAbility.generated.h"
 
-class AMyraCharacter;
+class APawn;
 class UMyraAbilitySystemComponent;
+class UMyraPawnAbilityComponent;
 
 /**
  * Enumerates when this ability should be activated automatically.
@@ -30,10 +31,9 @@ enum class EMyraAbilityActivationPolicy : uint8
  * Base gameplay ability for Myra . Inherit from this instead of
  * UGameplayAbility. Provides:
  *
- *  - Easy access to the owning Character and ASC without casting every time.
+ *  - Easy access to the owning pawn avatar and ASC without casting every time.
  *  - An ActivationPolicy enum so designers can make passive abilities without code.
  *  - Blueprint-friendly cost/cooldown query functions.
- *  - Automatic camera shake and animation montage helpers.
  *  - A clean CanActivateAbility override hook.
  */
 UCLASS(Abstract, BlueprintType, Blueprintable)
@@ -53,7 +53,7 @@ public:
 	 * When should this ability activate?
 	 *   OnInputTriggered — player presses a button (default).
 	 *   OnGranted        — activates immediately when added to the ASC (passive).
-	 *   OnSpawn          — activates when the character spawns.
+	 *   OnSpawn          — activates when the pawn avatar spawns.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra |Ability")
 	EMyraAbilityActivationPolicy ActivationPolicy = EMyraAbilityActivationPolicy::OnInputTriggered;
@@ -78,13 +78,17 @@ public:
 	//  Typed Accessors (avoid casting in every Blueprint)
 	// ------------------------------------------------
 
-	/** Returns the owning character cast to AMyraCharacter. Can be null. */
+	/** Returns the owning pawn avatar. Can be null. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
-	AMyraCharacter* GetMyraCharacter() const;
+	APawn* GetMyraPawn() const;
 
 	/** Returns the owning ASC. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
 	UMyraAbilitySystemComponent* GetMyraAbilitySystemComponent() const;
+
+	/** Returns the shared Myra pawn ability component for the current avatar. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
+	UMyraPawnAbilityComponent* GetMyraPawnAbilityComponent() const;
 
 	/** Returns true if this ability asset tags container includes the provided gameplay tag. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Ability")
@@ -126,18 +130,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Ability|Info")
 	float GetAbilityCooldownTimeRemaining() const;
-
-	// ------------------------------------------------
-	//  Animation Helpers
-	// ------------------------------------------------
-
-	/**
-	 * Plays a montage on the owning character and waits for it to complete.
-	 * This is just a convenience wrapper around the built-in PlayMontageAndWait task.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Myra |Ability|Animation")
-	void PlayAbilityMontage(UAnimMontage* Montage, float PlayRate = 1.f,
-		FName StartSection = NAME_None);
 
 protected:
 
