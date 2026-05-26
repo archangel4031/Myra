@@ -11,3 +11,6 @@ VisualStudioTools/
 /Content/*
 .qwen
 wiki
+
+# Remove generated Custom Attribute Sets
+CustomAttributeSets/
