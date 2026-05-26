@@ -67,7 +67,14 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
 
 #### Changelog
 
-- Ver 2.0.0-beta-3
-    - Fixed _Get Myra Character_ in Gameplay Ability Class
+**Important:** This update intruduces breaking changes. Read changes carefully before upgrading.
+
+- Ver 2.0.0-beta-4
+    - Breaking: refactored Myra around a shared pawn GAS architecture
+    - Breaking: added `AMyraPawn` as the generic non-character Myra base class
+    - Breaking: moved shared avatar GAS lifecycle into `UMyraPawnAbilityComponent`
+    - Breaking: removed Character-only assumptions from ability and damage routing helpers
+    - Breaking: removed Myra-specific montage helper from `UMyraGameplayAbility`
+    - Breaking: replication Mode is not read from Developer Settings instead of Hardcoded `Mixed` setting
 
 For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)

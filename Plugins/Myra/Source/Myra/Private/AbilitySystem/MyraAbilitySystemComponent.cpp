@@ -5,16 +5,14 @@
 #include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
 #include "Character/MyraPlayerState.h"
+#include "MyraDeveloperSettings.h"
 #include "Pawn/MyraPawnAbilityComponent.h"
 #include "AttributeSet.h"
 #include "UObject/UObjectGlobals.h"
 
 UMyraAbilitySystemComponent::UMyraAbilitySystemComponent()
 {
-	// Mixed replication is correct for most multiplayer games.
-	// Full mode replicates all GE info to every client (only use in single player or small games).
-	// Minimal mode only replicates to owner (use if owner doesn't need GE details locally).
-	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
+	ReplicationMode = UMyraDeveloperSettings::Get()->DefaultReplicationMode;
 }
 
 void UMyraAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)

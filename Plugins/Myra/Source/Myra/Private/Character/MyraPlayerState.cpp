@@ -4,6 +4,7 @@
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "AbilitySystem/MyraDefaultAttributeSet.h"
 #include "DataAssets/MyraAbilitySet.h"
+#include "MyraDeveloperSettings.h"
 #include "Net/UnrealNetwork.h"
 
 AMyraPlayerState::AMyraPlayerState()
@@ -16,7 +17,7 @@ AMyraPlayerState::AMyraPlayerState()
 	AbilitySystemComponent = CreateDefaultSubobject<UMyraAbilitySystemComponent>(
 		TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AbilitySystemComponent->SetReplicationMode(UMyraDeveloperSettings::Get()->DefaultReplicationMode);
 
 	// Create the base attribute set. Subobjects created on the owner are auto-registered
 	// with the ASC — no manual registration needed.
