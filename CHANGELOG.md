@@ -5,7 +5,7 @@
     - Breaking: moved shared avatar GAS lifecycle into `UMyraPawnAbilityComponent`
     - Breaking: removed Character-only assumptions from ability and damage routing helpers
     - Breaking: removed Myra-specific montage helper from `UMyraGameplayAbility`
-    - Breaking: replication Mode is not read from Developer Settings instead of Hardcoded `Mixed` setting
+    - Breaking: replication Mode is now read from Developer Settings instead of Hardcoded `Mixed` setting
 - Ver 2.0.0-beta-3
     - Fixed _Get Myra Character_ in Gameplay Ability Class
 - Ver 2.0.0-beta-2

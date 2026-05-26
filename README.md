@@ -75,6 +75,6 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
     - Breaking: moved shared avatar GAS lifecycle into `UMyraPawnAbilityComponent`
     - Breaking: removed Character-only assumptions from ability and damage routing helpers
     - Breaking: removed Myra-specific montage helper from `UMyraGameplayAbility`
-    - Breaking: replication Mode is not read from Developer Settings instead of Hardcoded `Mixed` setting
+    - Breaking: replication Mode is now read from Developer Settings instead of Hardcoded `Mixed` setting
 
 For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)
