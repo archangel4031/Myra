@@ -4,7 +4,7 @@
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "AbilitySystem/MyraGameplayAbility.h"
 #include "AttributeSet.h"
-#include "GameplayEffect.h"
+#include "Logging/MyraLog.h"
 
 UMyraAbilitySet::UMyraAbilitySet()
 {
@@ -55,7 +55,7 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 	{
 		if (!IsValid(Entry.AbilityClass))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Myra: AbilitySet '%s' has an invalid Ability entry."), *GetName());
+			UE_LOG(LogMyra, Warning, TEXT("Myra: AbilitySet '%s' has an invalid Ability entry."), *GetName());
 			continue;
 		}
 
@@ -83,7 +83,7 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 	{
 		if (!IsValid(Entry.GameplayEffectClass))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Myra: AbilitySet '%s' has an invalid GameplayEffect entry."), *GetName());
+			UE_LOG(LogMyra, Warning, TEXT("Myra: AbilitySet '%s' has an invalid GameplayEffect entry."), *GetName());
 			continue;
 		}
 

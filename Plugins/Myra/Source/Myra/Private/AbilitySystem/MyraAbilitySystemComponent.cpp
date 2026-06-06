@@ -9,6 +9,7 @@
 #include "Pawn/MyraPawnAbilityComponent.h"
 #include "AttributeSet.h"
 #include "UObject/UObjectGlobals.h"
+#include "Logging/MyraLog.h"
 
 UMyraAbilitySystemComponent::UMyraAbilitySystemComponent()
 {
@@ -29,7 +30,7 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 {
 	if (!AbilitySet)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Myra: GrantAbilitySet called with null AbilitySet."));
+		UE_LOG(LogMyra, Warning, TEXT("Myra: GrantAbilitySet called with null AbilitySet."));
 		return;
 	}
 
@@ -37,7 +38,7 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 	if (GrantedAbilitySets.Contains(AbilitySet))
 	{
 		UE_LOG(
-			LogTemp,
+			LogMyra,
 			Warning,
 			TEXT("Myra: Attempted to grant duplicate AbilitySet '%s' to ASC '%s' from '%s'. Ignoring."),
 			*GetNameSafe(AbilitySet),
@@ -53,7 +54,7 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 		GrantedAttributeSetHandles.FindOrAdd(AbilitySet));
 
 	UE_LOG(
-		LogTemp,
+		LogMyra,
 		Log,
 		TEXT("Myra: Granted AbilitySet '%s' to ASC '%s' from '%s'. Granted %d abilities, %d effects, and %d attribute sets."),
 		*GetNameSafe(AbilitySet),
@@ -165,6 +166,70 @@ bool UMyraAbilitySystemComponent::HasAttributeSetOfClass(TSubclassOf<UAttributeS
 	return false;
 }
 
+TArray<FMyraGrantedAbilityInfo> UMyraAbilitySystemComponent::GetGrantedAbilityInfos() const
+{
+	TArray<FMyraGrantedAbilityInfo> Result;
+
+	// GetActivatableAbilities() returns the ASC's live spec array.
+	// It is const-safe to iterate here because we only read from it.
+	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
+	{
+		UMyraGameplayAbility* AbilityCDO = Cast<UMyraGameplayAbility>(Spec.Ability);
+		if (!AbilityCDO)
+		{
+			// Skip non-Myra abilities (engine internals, etc.)
+			continue;
+		}
+
+		FMyraGrantedAbilityInfo Info;
+		Info.AbilityCDO = AbilityCDO;
+		Info.AbilityLevel = Spec.Level;
+		Info.SpecHandle = Spec.Handle;
+
+		// Input tag is stored in the spec's DynamicAbilityTags — this is set by
+		// UMyraAbilitySet::GiveToAbilitySystem when it calls
+		// AbilitySpec.GetDynamicSpecSourceTags().AddTag(Entry.InputTag).
+		// We grab the first tag under Myra.Input (or just any tag if none match).
+		// If the ability has no input tag, InputTag stays invalid, which is fine.
+		const FGameplayTagContainer& DynamicTags = Spec.GetDynamicSpecSourceTags();
+		for (const FGameplayTag& Tag : DynamicTags)
+		{
+			// Accept any valid tag — InputTag is the only thing stored in DynamicSpecSourceTags
+			// by Myra's ability granting path, so any tag found here IS the input tag.
+			if (Tag.IsValid())
+			{
+				Info.InputTag = Tag;
+				break;
+			}
+		}
+
+		Result.Add(MoveTemp(Info));
+	}
+
+	return Result;
+}
+
+UMyraGameplayAbility* UMyraAbilitySystemComponent::GetGrantedAbilityCDOByInputTag(FGameplayTag InputTag) const
+{
+	if (!InputTag.IsValid())
+	{
+		return nullptr;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : GetActivatableAbilities())
+	{
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			continue;
+		}
+
+		return Cast<UMyraGameplayAbility>(Spec.Ability);
+	}
+
+	return nullptr;
+}
+
+
 FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyEffectToSelf(
 	TSubclassOf<UGameplayEffect> EffectClass, float Level)
 {
@@ -201,7 +266,7 @@ FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyInitializationEffe
 		if (AppliedEffectPair.Value == EffectClassPtr)
 		{
 			UE_LOG(
-				LogTemp,
+				LogMyra,
 				Warning,
 				TEXT("Myra: Skipping duplicate attribute initialization effect '%s' on ASC '%s' from '%s'. Use only one initialization path for a given init effect."),
 				*GetNameSafe(EffectClassPtr),
@@ -285,7 +350,7 @@ int32 UMyraAbilitySystemComponent::SetGrantedAbilityLevelByClass(
 {
 	if (!IsOwnerActorAuthoritative())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Myra: SetGrantedAbilityLevelByClass must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
+		UE_LOG(LogMyra, Warning, TEXT("Myra: SetGrantedAbilityLevelByClass must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
 		return 0;
 	}
 
@@ -323,7 +388,7 @@ int32 UMyraAbilitySystemComponent::SetGrantedAbilityLevelByAbilityTag(
 {
 	if (!IsOwnerActorAuthoritative())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Myra: SetGrantedAbilityLevelByAbilityTag must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
+		UE_LOG(LogMyra, Warning, TEXT("Myra: SetGrantedAbilityLevelByAbilityTag must be called on the authoritative ASC '%s'."), *GetNameSafe(this));
 		return 0;
 	}
 

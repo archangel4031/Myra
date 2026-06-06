@@ -71,6 +71,56 @@ struct FMyraGEExecutedInfo
 };
 
 /**
+ * FMyraGrantedAbilityInfo
+ *
+ * Lightweight snapshot of a single granted ability spec, shaped for Blueprint use.
+ * Retrieve these via UMyraAbilitySystemComponent::GetGrantedAbilityInfos().
+ *
+ * Usage pattern:
+ *   1. Call GetMyraAbilitySystemComponent() on your Character or Pawn.
+ *   2. Call GetGrantedAbilityInfos() to get the array.
+ *   3. For each entry, cast AbilityCDO to your Blueprint GA subclass to read
+ *      designer-set properties (Icon, Description, etc.).
+ *   4. Call GetAbilityCostAmount() / GetAbilityCooldownDuration() directly on
+ *      AbilityCDO — they are already exposed as BlueprintPure on UMyraGameplayAbility.
+ */
+USTRUCT(BlueprintType)
+struct FMyraGrantedAbilityInfo
+{
+	GENERATED_BODY()
+
+	/**
+	 * The Class Default Object of the granted ability.
+	 * Cast this to your Blueprint GA subclass (e.g. GA_FireBall) to read
+	 * custom UPROPERTY fields like Icon, Description, etc.
+	 * You can also call GetAbilityCostAmount() and GetAbilityCooldownDuration()
+	 * on it directly from Blueprint.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
+	TObjectPtr<UMyraGameplayAbility> AbilityCDO = nullptr;
+
+	/**
+	 * The input tag this ability is bound to (set in the AbilitySet entry).
+	 * Matches the tag used by MyraInputComponent for activation / release.
+	 * Empty if the ability has no input binding.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
+	FGameplayTag InputTag;
+
+	/** Current granted level of this ability spec. */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
+	int32 AbilityLevel = 1;
+
+	/**
+	 * Handle to the live ability spec inside the ASC.
+	 * Pass this to TryActivateAbility / ClearAbility / SetAbilityLevel if needed.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
+	FGameplayAbilitySpecHandle SpecHandle;
+};
+
+
+/**
  * Delegate broadcast whenever any attribute changes on this ASC.
  * UI elements can bind to this to update health bars, mana bars, etc.
  */
@@ -143,6 +193,37 @@ public:
 	/** Returns true if the attribute exists on this ASC. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra |Attributes")
 	bool HasAttribute(FGameplayAttribute Attribute) const;
+
+	/**
+	 * Returns info about every ability currently granted to this ASC.
+	 *
+	 * Each entry contains:
+	 *   - AbilityCDO   : the ability Class Default Object — cast to your Blueprint
+	 *                    subclass to read Icon, Description, or any custom property.
+	 *   - InputTag     : the tag used to activate this ability via input (may be invalid
+	 *                    if the ability has no input binding).
+	 *   - AbilityLevel : current level of the granted spec.
+	 *   - SpecHandle   : live handle for further queries (cooldown remaining, etc.).
+	 *
+	 * Only UMyraGameplayAbility subclasses are included; raw UGameplayAbility entries
+	 * (e.g. engine internals) are silently skipped.
+	 *
+	 * Call this on BeginPlay (after abilities are granted) or whenever you need to
+	 * refresh a HUD ability bar.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Abilities")
+	TArray<FMyraGrantedAbilityInfo> GetGrantedAbilityInfos() const;
+
+	/**
+	 * Returns the CDO of the granted ability whose input tag matches InputTag.
+	 * Returns null if no ability with that tag is found.
+	 *
+	 * Convenience shortcut when you know the exact slot tag and just want the CDO
+	 * (e.g. to draw an icon for a specific ability slot in the HUD).
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Abilities")
+	UMyraGameplayAbility* GetGrantedAbilityCDOByInputTag(FGameplayTag InputTag) const;
+
 
 	/** Returns true if this ASC already owns an AttributeSet instance of the exact class. */
 	bool HasAttributeSetOfClass(TSubclassOf<UAttributeSet> AttributeSetClass) const;

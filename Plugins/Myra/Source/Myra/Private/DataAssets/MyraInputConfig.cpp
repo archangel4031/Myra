@@ -2,6 +2,7 @@
 
 #include "DataAssets/MyraInputConfig.h"
 #include "InputAction.h"
+#include "Logging/MyraLog.h"
 
 const UInputAction* UMyraInputConfig::FindNativeInputActionForTag(
 	const FGameplayTag& InputTag,
@@ -38,7 +39,7 @@ const UInputAction* UMyraInputConfig::FindInputActionForTag(
 	if (bLogIfNotFound)
 	{
 		UE_LOG(
-			LogTemp,
+			LogMyra,
 			Warning,
 			TEXT("MyraInputConfig '%s' does not contain an input action for tag '%s'."),
 			*GetNameSafe(this),
