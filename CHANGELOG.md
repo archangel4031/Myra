@@ -1,4 +1,7 @@
 #### Changelog
+- Ver 2.0.0-beta-5
+    - Added custom Log category for Myra
+    - Added Blueprint helpers to retrieve Granted Abilities from ASC
 - Ver 2.0.0-beta-4
     - Breaking: refactored Myra around a shared pawn GAS architecture
     - Breaking: added `AMyraPawn` as the generic non-character Myra base class
