@@ -513,6 +513,11 @@ void UMyraAbilitySystemComponent::EnsureDefaultAttributeSet()
 		}
 	}
 
+	if (!IsOwnerActorAuthoritative())
+	{
+		return;
+	}
+
 	UMyraDefaultAttributeSet* DefaultAttributeSet = NewObject<UMyraDefaultAttributeSet>(
 		MyraOwnerActor,
 		UMyraDefaultAttributeSet::StaticClass(),
