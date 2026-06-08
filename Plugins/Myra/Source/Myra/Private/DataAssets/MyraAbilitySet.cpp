@@ -60,6 +60,29 @@ void UMyraAbilitySet::GiveToAbilitySystem(
 		}
 
 		UMyraGameplayAbility* AbilityCDO = Entry.AbilityClass->GetDefaultObject<UMyraGameplayAbility>();
+		const UClass* AbilityClass = AbilityCDO ? AbilityCDO->GetClass() : nullptr;
+		bool bAlreadyGranted = false;
+
+		for (const FGameplayAbilitySpec& ExistingSpec : ASC->GetActivatableAbilities())
+		{
+			if (ExistingSpec.Ability && ExistingSpec.Ability->GetClass() == AbilityClass)
+			{
+				bAlreadyGranted = true;
+				break;
+			}
+		}
+
+		if (bAlreadyGranted)
+		{
+			UE_LOG(
+				LogMyra,
+				Warning,
+				TEXT("Myra: AbilitySet '%s' attempted to grant duplicate ability '%s' to ASC '%s'. Ignoring duplicate ability entry."),
+				*GetName(),
+				*GetNameSafe(AbilityClass),
+				*GetNameSafe(ASC->GetOwner()));
+			continue;
+		}
 
 		FGameplayAbilitySpec AbilitySpec(AbilityCDO, Entry.AbilityLevel);
 		AbilitySpec.SourceObject = SourceObject;

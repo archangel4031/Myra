@@ -170,11 +170,12 @@ public:
 	/**
 	 * Grant all abilities, attribute sets, and startup effects defined in an AbilitySet.
 	 * Safe to call multiple times — duplicate sets are ignored.
+	 * Returns true only when the set was granted by this call.
 	 * @param AbilitySet  The data asset defining what to grant.
 	 * @param SourceObject Optional object to tag grants with (useful for removal later).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
-	void GrantAbilitySet(UMyraAbilitySet* AbilitySet, UObject* SourceObject = nullptr);
+	bool GrantAbilitySet(UMyraAbilitySet* AbilitySet, UObject* SourceObject = nullptr);
 
 	/**
 	 * Remove all grants that were given by a specific AbilitySet.

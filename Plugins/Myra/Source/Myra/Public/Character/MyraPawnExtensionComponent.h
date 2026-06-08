@@ -4,12 +4,11 @@
 #include "CoreMinimal.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "Components/ActorComponent.h"
-#include "GameplayAbilitySpec.h"
 #include "MyraPawnExtensionComponent.generated.h"
 
-class UAttributeSet;
 class UEnhancedInputComponent;
 class UInputComponent;
+class UMyraAbilitySet;
 class UMyraAbilitySystemComponent;
 class UMyraPawnData;
 
@@ -94,7 +93,9 @@ private:
 
 	TWeakObjectPtr<UEnhancedInputComponent> CachedInputComponent;
 	TArray<uint32> BoundInputHandles;
-	TArray<FGameplayAbilitySpecHandle> AppliedPawnDataAbilityHandles;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UMyraAbilitySet>> AppliedPawnDataAbilitySets;
+
 	TArray<FActiveGameplayEffectHandle> AppliedPawnDataEffectHandles;
-	TArray<TWeakObjectPtr<UAttributeSet>> AppliedPawnDataAttributeSetHandles;
 };

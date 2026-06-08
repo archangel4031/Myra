@@ -130,13 +130,17 @@ public:
 		meta = (TitleProperty = "GameplayEffectClass"))
 	TArray<FMyraAbilitySet_GameplayEffect> GrantedGameplayEffects;
 
-	// ------------------------------------------------
-	//  Runtime API
-	// ------------------------------------------------
+	// UPrimaryDataAsset interface
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
+private:
+
+	friend class UMyraAbilitySystemComponent;
 
 	/**
 	 * Grant everything in this set to the provided ASC.
-	 * Called internally by UMyraAbilitySystemComponent::GrantAbilitySet().
+	 * Internal grant helper. Use UMyraAbilitySystemComponent::GrantAbilitySet()
+	 * so duplicate tracking and cleanup stay centralized.
 	 * OutAbilityHandles and OutEffectHandles receive the handles needed for removal later.
 	 */
 	void GiveToAbilitySystem(
@@ -145,7 +149,4 @@ public:
 		TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles,
 		TArray<FActiveGameplayEffectHandle>& OutEffectHandles,
 		TArray<TWeakObjectPtr<UAttributeSet>>& OutAttributeSetHandles) const;
-
-	// UPrimaryDataAsset interface
-	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

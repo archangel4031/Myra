@@ -8,7 +8,6 @@
 #include "Components/InputComponent.h"
 #include "DataAssets/MyraAbilitySet.h"
 #include "DataAssets/MyraPawnData.h"
-#include "AttributeSet.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
@@ -129,12 +128,10 @@ void UMyraPawnExtensionComponent::ApplyPawnData()
 		{
 			if (AbilitySet)
 			{
-				AbilitySet->GiveToAbilitySystem(
-					ASC,
-					GetOwner(),
-					AppliedPawnDataAbilityHandles,
-					AppliedPawnDataEffectHandles,
-					AppliedPawnDataAttributeSetHandles);
+				if (ASC->GrantAbilitySet(AbilitySet, GetOwner()))
+				{
+					AppliedPawnDataAbilitySets.Add(AbilitySet);
+				}
 			}
 		}
 
@@ -162,11 +159,11 @@ void UMyraPawnExtensionComponent::RemovePawnData()
 	UMyraAbilitySystemComponent* ASC = GetMyraAbilitySystemComponent();
 	if (ASC && GetOwner()->HasAuthority())
 	{
-		for (const FGameplayAbilitySpecHandle& AbilityHandle : AppliedPawnDataAbilityHandles)
+		for (UMyraAbilitySet* AbilitySet : AppliedPawnDataAbilitySets)
 		{
-			if (AbilityHandle.IsValid())
+			if (AbilitySet)
 			{
-				ASC->ClearAbility(AbilityHandle);
+				ASC->RemoveAbilitySet(AbilitySet);
 			}
 		}
 
@@ -174,19 +171,10 @@ void UMyraPawnExtensionComponent::RemovePawnData()
 		{
 			ASC->RemoveTrackedGameplayEffect(EffectHandle);
 		}
-
-		for (const TWeakObjectPtr<UAttributeSet>& AttributeSetHandle : AppliedPawnDataAttributeSetHandles)
-		{
-			if (UAttributeSet* AttributeSet = AttributeSetHandle.Get())
-			{
-				ASC->RemoveSpawnedAttribute(AttributeSet);
-			}
-		}
 	}
 
-	AppliedPawnDataAbilityHandles.Reset();
+	AppliedPawnDataAbilitySets.Reset();
 	AppliedPawnDataEffectHandles.Reset();
-	AppliedPawnDataAttributeSetHandles.Reset();
 	bPawnDataApplied = false;
 }
 

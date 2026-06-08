@@ -26,12 +26,12 @@ void UMyraAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AAc
 //  Ability Set Granting
 // ------------------------------------------------
 
-void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, UObject* SourceObject)
+bool UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, UObject* SourceObject)
 {
 	if (!AbilitySet)
 	{
 		UE_LOG(LogMyra, Warning, TEXT("Myra: GrantAbilitySet called with null AbilitySet."));
-		return;
+		return false;
 	}
 
 	// Abilities can only be granted on the server (or in standalone).
@@ -46,7 +46,7 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 				"Check your call site and ensure it runs on the server."),
 			*GetNameSafe(AbilitySet),
 			*GetNameSafe(GetOwner()));
-		return;
+		return false;
 	}
 
 	// Don't grant the same set twice
@@ -55,18 +55,20 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 		UE_LOG(
 			LogMyra,
 			Warning,
-			TEXT("Myra: Attempted to grant duplicate AbilitySet '%s' to ASC '%s' from '%s'. Ignoring."),
+			TEXT("Myra: Duplicate AbilitySet grant prevented. AbilitySet '%s' is already granted to ASC '%s'; duplicate request from '%s' was ignored to avoid duplicate abilities, effects, and attribute sets."),
 			*GetNameSafe(AbilitySet),
 			*GetNameSafe(GetOwner()),
 			*GetNameSafe(SourceObject));
-		return;
+		return false;
 	}
 
 	GrantedAbilitySets.Add(AbilitySet);
-	AbilitySet->GiveToAbilitySystem(this, SourceObject,
-		GrantedAbilityHandles.FindOrAdd(AbilitySet),
-		GrantedEffectHandles.FindOrAdd(AbilitySet),
-		GrantedAttributeSetHandles.FindOrAdd(AbilitySet));
+
+	TArray<FGameplayAbilitySpecHandle>& AbilityHandles = GrantedAbilityHandles.FindOrAdd(AbilitySet);
+	TArray<FActiveGameplayEffectHandle>& EffectHandles = GrantedEffectHandles.FindOrAdd(AbilitySet);
+	TArray<TWeakObjectPtr<UAttributeSet>>& AttributeSetHandles = GrantedAttributeSetHandles.FindOrAdd(AbilitySet);
+
+	AbilitySet->GiveToAbilitySystem(this, SourceObject, AbilityHandles, EffectHandles, AttributeSetHandles);
 
 	UE_LOG(
 		LogMyra,
@@ -78,6 +80,8 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 		GrantedAbilityHandles[AbilitySet].Num(),
 		GrantedEffectHandles[AbilitySet].Num(),
 		GrantedAttributeSetHandles[AbilitySet].Num());
+
+	return true;
 }
 
 void UMyraAbilitySystemComponent::RemoveAbilitySet(UMyraAbilitySet* AbilitySet)
