@@ -12,5 +12,7 @@ VisualStudioTools/
 .qwen
 wiki
 
+AGENTS.md
+
 # Remove generated Custom Attribute Sets
 CustomAttributeSets/

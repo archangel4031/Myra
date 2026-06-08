@@ -34,6 +34,21 @@ void UMyraAbilitySystemComponent::GrantAbilitySet(UMyraAbilitySet* AbilitySet, U
 		return;
 	}
 
+	// Abilities can only be granted on the server (or in standalone).
+	// Calling this on a client is a no-op — the server replicates the grants automatically.
+	if (!IsOwnerActorAuthoritative())
+	{
+		UE_LOG(
+			LogMyra,
+			Warning,
+			TEXT("Myra: GrantAbilitySet('%s') was called on a non-authority instance of ASC '%s'. "
+				"Abilities must be granted on the server only — they replicate automatically to clients. "
+				"Check your call site and ensure it runs on the server."),
+			*GetNameSafe(AbilitySet),
+			*GetNameSafe(GetOwner()));
+		return;
+	}
+
 	// Don't grant the same set twice
 	if (GrantedAbilitySets.Contains(AbilitySet))
 	{
