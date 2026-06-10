@@ -248,6 +248,90 @@ UMyraGameplayAbility* UMyraAbilitySystemComponent::GetGrantedAbilityCDOByInputTa
 	return nullptr;
 }
 
+FGameplayAbilitySpecHandle UMyraAbilitySystemComponent::GiveAbilityWithInputTag(
+	TSubclassOf<UGameplayAbility> AbilityClass,
+	int32 Level,
+	FGameplayTag InputTag)
+{
+	// Abilities can only be granted on the authoritative side; they replicate automatically.
+	if (!IsOwnerActorAuthoritative())
+	{
+		UE_LOG(LogMyra, Warning,
+			TEXT("Myra: GiveAbilityWithInputTag called on non-authoritative actor '%s'. "
+				"Call this on the server only."),
+			*GetNameSafe(GetOwner()));
+		return FGameplayAbilitySpecHandle();
+	}
+
+	if (!AbilityClass)
+	{
+		UE_LOG(LogMyra, Warning,
+			TEXT("Myra: GiveAbilityWithInputTag called with a null AbilityClass."));
+		return FGameplayAbilitySpecHandle();
+	}
+
+	FGameplayAbilitySpec Spec(AbilityClass, Level);
+
+	// Store the input tag in DynamicSpecSourceTags so AbilityInputTagPressed /
+	// AbilityInputTagReleased and BindAbilityActions can find this ability.
+	// This mirrors what UMyraAbilitySet::GiveToAbilitySystem does internally.
+	if (InputTag.IsValid())
+	{
+		Spec.GetDynamicSpecSourceTags().AddTag(InputTag);
+	}
+	else
+	{
+		UE_LOG(LogMyra, Warning,
+			TEXT("Myra: GiveAbilityWithInputTag for class '%s' received an invalid InputTag. "
+				"The ability will be granted but will not respond to Myra input binding. "
+				"Call SetAbilityInputTag later if you want to add a binding."),
+			*GetNameSafe(AbilityClass));
+	}
+
+	return GiveAbility(Spec);
+}
+
+bool UMyraAbilitySystemComponent::SetAbilityInputTag(
+	FGameplayAbilitySpecHandle SpecHandle, FGameplayTag NewInputTag)
+{
+	// Tag changes must originate on the authority and replicate via the spec.
+	if (!IsOwnerActorAuthoritative())
+	{
+		UE_LOG(LogMyra, Warning,
+			TEXT("Myra: SetAbilityInputTag must be called on the authoritative actor."));
+		return false;
+	}
+
+	FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(SpecHandle);
+	if (!Spec)
+	{
+		UE_LOG(LogMyra, Warning,
+			TEXT("Myra: SetAbilityInputTag could not find a spec for the provided handle."));
+		return false;
+	}
+
+	// Replace all existing DynamicSpecSourceTags with the new input tag.
+	// Within Myra, DynamicSpecSourceTags is exclusively used for input tags,
+	// so clearing and re-adding is always safe.
+	FGameplayTagContainer& DynamicTags = Spec->GetDynamicSpecSourceTags();
+	DynamicTags.Reset();
+
+	if (NewInputTag.IsValid())
+	{
+		DynamicTags.AddTag(NewInputTag);
+	}
+
+	// Mark dirty so the spec replicates to clients.
+	MarkAbilitySpecDirty(*Spec);
+	return true;
+}
+
+bool UMyraAbilitySystemComponent::ClearAbilityInputTag(FGameplayAbilitySpecHandle SpecHandle)
+{
+	// Delegate to SetAbilityInputTag with an empty tag — it handles the authority
+	// check and dirty marking, so this stays a thin wrapper.
+	return SetAbilityInputTag(SpecHandle, FGameplayTag());
+}
 
 FActiveGameplayEffectHandle UMyraAbilitySystemComponent::ApplyEffectToSelf(
 	TSubclassOf<UGameplayEffect> EffectClass, float Level)

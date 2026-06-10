@@ -225,6 +225,47 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Abilities")
 	UMyraGameplayAbility* GetGrantedAbilityCDOByInputTag(FGameplayTag InputTag) const;
 
+	/**
+	 * Grants an ability and registers it with Myra's input system by storing
+	 * InputTag in the spec's DynamicSpecSourceTags.
+	 *
+	 * Use this instead of the engine's built-in Give Ability node whenever you
+	 * want the ability to respond to input via MyraInputComponent or
+	 * AbilityInputTagPressed / AbilityInputTagReleased.
+	 *
+	 * @param AbilityClass  The ability class to grant.
+	 * @param Level         Starting ability level.
+	 * @param InputTag      Tag used to activate this ability via input
+	 *                      (e.g. Myra.Input.Ability.Slot1). Pass an invalid tag
+	 *                      to grant with no input binding.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra|Abilities", meta = (DisplayName = "Give Ability (Myra)"))
+	FGameplayAbilitySpecHandle GiveAbilityWithInputTag(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level,	FGameplayTag InputTag);
+
+	/**
+	 * Adds or replaces the input tag on an already-granted ability spec so it
+	 * integrates with Myra's input routing.
+	 *
+	 * Use this to fix abilities that were granted via the base engine Give Ability
+	 * node after the fact.
+	 *
+	 * Replaces ALL tags in DynamicSpecSourceTags with the new tag. Within Myra,
+	 * only input tags are stored there, so this is safe.
+	 *
+	 * @return true if the spec was found and updated; false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra|Abilities")
+	bool SetAbilityInputTag(FGameplayAbilitySpecHandle SpecHandle, FGameplayTag NewInputTag);
+
+	/**
+	 * Removes the input tag from a granted ability spec, disconnecting it from
+	 * Myra's input routing without revoking the ability itself.
+	 *
+	 * @return true if the spec was found and cleared; false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra|Abilities")
+	bool ClearAbilityInputTag(FGameplayAbilitySpecHandle SpecHandle);
+
 
 	/** Returns true if this ASC already owns an AttributeSet instance of the exact class. */
 	bool HasAttributeSetOfClass(TSubclassOf<UAttributeSet> AttributeSetClass) const;
