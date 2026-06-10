@@ -138,7 +138,7 @@ void AMyraCharacter::OnAbilitySystemInitialized()
 {
 }
 
-void AMyraCharacter::OnDeath_Implementation(AActor* Killer)
+void AMyraCharacter::OnDeath_Implementation(APawn* DeadPawn)
 {
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
@@ -164,10 +164,9 @@ bool AMyraCharacter::ModifyMyraDamageBeforeApplication(float InDamage, float& Ou
 	return ModifyDamageBeforeApplication(InDamage, OutDamage);
 }
 
-void AMyraCharacter::HandleMyraDeath(AActor* Killer)
+void AMyraCharacter::HandleMyraDeath(APawn* DeadPawn)
 {
-	OnDeathEvent.Broadcast(this, Killer);
-	OnDeath(Killer);
+	OnDeath(DeadPawn);
 }
 
 void AMyraCharacter::HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)

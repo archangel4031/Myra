@@ -13,7 +13,6 @@ class UMyraAbilitySet;
 class UMyraDefaultAttributeSet;
 class UMyraPawnExtensionComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMyraOnPawnDeath, APawn*, DeadPawn, AActor*, Killer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMyraOnPawnHealthChanged, APawn*, Pawn, float, OldValue, float, NewValue);
 
 /**

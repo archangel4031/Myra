@@ -393,7 +393,7 @@ void UMyraPawnAbilityComponent::HandleDeathTag(const FGameplayTag GameplayTag, i
 
 	if (IMyraPawnAvatarInterface* AvatarInterface = Cast<IMyraPawnAvatarInterface>(GetOwner()))
 	{
-		AvatarInterface->HandleMyraDeath(nullptr);
+		AvatarInterface->HandleMyraDeath(GetPawn());
 	}
 }
 

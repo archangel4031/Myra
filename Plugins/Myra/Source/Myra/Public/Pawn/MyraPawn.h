@@ -81,9 +81,6 @@ public:
 	virtual bool ModifyDamageBeforeApplication_Implementation(float InDamage, float& OutDamage);
 
 	UPROPERTY(BlueprintAssignable, Category = "Myra|Events")
-	FMyraOnPawnDeath OnDeathEvent;
-
-	UPROPERTY(BlueprintAssignable, Category = "Myra|Events")
 	FMyraOnPawnHealthChanged OnHealthChanged;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Events")
@@ -102,15 +99,15 @@ protected:
 	virtual void OnAbilitySystemInitialized();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Myra|Events")
-	void OnDeath(AActor* Killer);
-	virtual void OnDeath_Implementation(AActor* Killer);
+	void OnDeath(APawn* DeadPawn);
+	virtual void OnDeath_Implementation(APawn* DeadPawn);
 
 	//~ Begin IMyraPawnAvatarInterface
 	virtual void HandleMyraAbilitySystemInitialized() override;
 	virtual void HandleMyraAbilitySystemUninitialized() override;
 	virtual void HandleMyraHealthChanged(float OldValue, float NewValue) override;
 	virtual bool ModifyMyraDamageBeforeApplication(float InDamage, float& OutDamage) override;
-	virtual void HandleMyraDeath(AActor* Killer) override;
+	virtual void HandleMyraDeath(APawn* DeadPawn) override;
 	virtual void HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info) override;
 	//~ End IMyraPawnAvatarInterface
 };

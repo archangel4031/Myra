@@ -138,7 +138,7 @@ void AMyraPawn::OnAbilitySystemInitialized()
 {
 }
 
-void AMyraPawn::OnDeath_Implementation(AActor* Killer)
+void AMyraPawn::OnDeath_Implementation(APawn* DeadPawn)
 {
 	if (UPrimitiveComponent* RootPrimitiveComponent = Cast<UPrimitiveComponent>(GetRootComponent()))
 	{
@@ -171,10 +171,9 @@ bool AMyraPawn::ModifyMyraDamageBeforeApplication(float InDamage, float& OutDama
 	return ModifyDamageBeforeApplication(InDamage, OutDamage);
 }
 
-void AMyraPawn::HandleMyraDeath(AActor* Killer)
+void AMyraPawn::HandleMyraDeath(APawn* DeadPawn)
 {
-	OnDeathEvent.Broadcast(this, Killer);
-	OnDeath(Killer);
+	OnDeath(DeadPawn);
 }
 
 void AMyraPawn::HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info)

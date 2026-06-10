@@ -5,6 +5,7 @@
 #include "UObject/Interface.h"
 #include "MyraPawnAvatarInterface.generated.h"
 
+class APawn;
 class UMyraAbilitySystemComponent;
 class UMyraPawnAbilityComponent;
 class UMyraPawnExtensionComponent;
@@ -35,6 +36,6 @@ public:
 	virtual void HandleMyraAbilitySystemUninitialized() = 0;
 	virtual void HandleMyraHealthChanged(float OldValue, float NewValue) = 0;
 	virtual bool ModifyMyraDamageBeforeApplication(float InDamage, float& OutDamage) = 0;
-	virtual void HandleMyraDeath(AActor* Killer) = 0;
+	virtual void HandleMyraDeath(APawn* DeadPawn) = 0;
 	virtual void HandleMyraGameplayEffectExecuted(const FMyraGEExecutedInfo& Info) = 0;
 };
