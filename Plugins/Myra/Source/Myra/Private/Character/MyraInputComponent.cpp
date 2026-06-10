@@ -4,10 +4,10 @@
 #include "AbilitySystem/MyraAbilitySystemComponent.h"
 #include "DataAssets/MyraInputConfig.h"
 
-void UMyraInputComponent::ActivateAbilityByTag(UMyraAbilitySystemComponent* ASC, FGameplayTag InputTag)
+bool UMyraInputComponent::ActivateAbilityByTag(UMyraAbilitySystemComponent* ASC, FGameplayTag InputTag)
 {
-	if (!ASC || !InputTag.IsValid()) { return; }
-	ASC->AbilityInputTagPressed(InputTag);
+	if (!ASC || !InputTag.IsValid()) { return false; }
+	return ASC->TryActivateAbilityByInputTag(InputTag);
 }
 
 void UMyraInputComponent::ReleaseAbilityByTag(UMyraAbilitySystemComponent* ASC, FGameplayTag InputTag)

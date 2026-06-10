@@ -30,9 +30,11 @@ public:
 	/**
 	 * Tries to activate all abilities on the ASC that match the given tag.
 	 * Call this from your Blueprint input event (On Input Action → Started).
+	 * Returns true if at least one ability activated successfully.
+	 * Mirrors the behaviour of the built-in Try Activate Ability By Class node.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Input")
-	static void ActivateAbilityByTag(UMyraAbilitySystemComponent* ASC, FGameplayTag InputTag);
+	static bool ActivateAbilityByTag(UMyraAbilitySystemComponent* ASC, FGameplayTag InputTag);
 
 	/**
 	 * Signals input-released to any active abilities matching the tag.

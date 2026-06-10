@@ -290,9 +290,22 @@ public:
 	/** Removes a tracked gameplay effect and releases any Myra init-effect tracking attached to it. */
 	void RemoveTrackedGameplayEffect(const FActiveGameplayEffectHandle& EffectHandle);
 
-	/** Forwards an input press tag to matching abilities and activates them if needed. */
+	/**
+	 * Forwards an input press tag to matching abilities and activates them if needed.
+	 * Returns true if at least one ability was successfully activated, false otherwise.
+	 * Mirrors the behaviour of TryActivateAbilityByClass for Blueprint callers.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
 	void AbilityInputTagPressed(FGameplayTag InputTag);
+
+	/**
+	 * Same as AbilityInputTagPressed but returns true if at least one ability
+	 * activated successfully. Use this for Blueprint nodes that need a result,
+	 * such as ActivateAbilityByTag on UMyraInputComponent.
+	 * Mirrors the semantics of the built-in Try Activate Ability By Class node.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")
+	bool TryActivateAbilityByInputTag(FGameplayTag InputTag);
 
 	/** Forwards an input release tag to any active matching abilities. */
 	UFUNCTION(BlueprintCallable, Category = "Myra |Abilities")

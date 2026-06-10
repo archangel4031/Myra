@@ -401,9 +401,16 @@ void UMyraAbilitySystemComponent::RemoveTrackedGameplayEffect(const FActiveGamep
 
 void UMyraAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	// Void wrapper — keeps Enhanced Input's BindAction happy (requires void return).
+	// The actual logic and return value live in TryActivateAbilityByInputTag.
+	TryActivateAbilityByInputTag(InputTag);
+}
+
+bool UMyraAbilitySystemComponent::TryActivateAbilityByInputTag(FGameplayTag InputTag)
+{
 	if (!InputTag.IsValid())
 	{
-		return;
+		return false;
 	}
 
 	TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
@@ -415,6 +422,8 @@ void UMyraAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 			continue;
 		}
 
+		// Notify the ability that its input was pressed regardless of whether
+		// it is already active (important for hold/release abilities).
 		AbilitySpecInputPressed(AbilitySpec);
 
 		if (!AbilitySpec.IsActive())
@@ -423,10 +432,14 @@ void UMyraAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 		}
 	}
 
+	// Try activating every matching spec; report success if any one of them activates.
+	bool bAnyActivated = false;
 	for (const FGameplayAbilitySpecHandle& AbilityHandle : AbilitiesToActivate)
 	{
-		TryActivateAbility(AbilityHandle);
+		bAnyActivated |= TryActivateAbility(AbilityHandle);
 	}
+
+	return bAnyActivated;
 }
 
 void UMyraAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
