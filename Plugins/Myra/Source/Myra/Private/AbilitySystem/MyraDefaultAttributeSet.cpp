@@ -69,6 +69,14 @@ void UMyraDefaultAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 						ASC->GetAvatarActor(),
 						MyraGameplayTags::Myra_GameEvent_Death,
 						EventData);
+					
+					// Apply the State tag directly as a Loose Tag. This guarantees the C++ HandleDeathTag pipeline fires immediately.
+					if (ASC)
+					{
+						ASC->AddLooseGameplayTag(MyraGameplayTags::Myra_State_Dead);
+						// Keep the count of tag to 1 to prevent repeated triggers if somehow multiple death events are sent. This also allows to remove exactly 1 tag when reviving, without worrying about how many times the death event was triggered.
+						ASC->SetTagMapCount(MyraGameplayTags::Myra_State_Dead, 1);
+					}
 				}
 			}
 		}

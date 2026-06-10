@@ -144,9 +144,9 @@ void UMyraPawnExtensionComponent::ApplyPawnData()
 				AppliedPawnDataEffectHandles.Add(InitEffectHandle);
 			}
 		}
-
-		bPawnDataApplied = true;
 	}
+	// Moved outside the HasAuthority() block so clients register the application and avoid infinite re-entry from CheckPawnReadyToInitialize().
+	bPawnDataApplied = true;
 }
 
 void UMyraPawnExtensionComponent::RemovePawnData()

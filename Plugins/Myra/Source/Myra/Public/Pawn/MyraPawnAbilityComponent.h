@@ -99,6 +99,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra|Configuration")
 	TSubclassOf<UGameplayEffect> DefaultAttributeInitEffect;
 
+	// The Gameplay Effect applied upon respawn (e.g., restores Health/Mana to max)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Myra|Death")
+	TSubclassOf<class UGameplayEffect> RespawnGameplayEffect;
+
+	// Call this to revive the pawn
+	UFUNCTION(BlueprintCallable, Category = "Myra|Death")
+	virtual void Respawn();
+
 private:
 
 	bool InitAbilitySystemForPlayerState();

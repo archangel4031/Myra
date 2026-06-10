@@ -8,6 +8,7 @@
 #include "GameFramework/Pawn.h"
 #include "Pawn/MyraPawnAvatarInterface.h"
 #include "Tags/MyraNativeGameplayTags.h"
+#include "Logging/MyraLog.h"
 
 UMyraPawnAbilityComponent::UMyraPawnAbilityComponent()
 {
@@ -140,6 +141,41 @@ bool UMyraPawnAbilityComponent::ModifyDamageBeforeApplication(float InDamage, fl
 	}
 
 	return false;
+}
+
+void UMyraPawnAbilityComponent::Respawn()
+{
+	UMyraAbilitySystemComponent* ASC = GetMyraAbilitySystemComponent();
+	if (!ASC)
+	{
+		return;
+	}
+
+	// Remove the Dead tag. 
+	// Because HandleDeathTag listens for NewOrRemoved, it will fire again here.
+	// Check inside HandleDeathTag if the tag was ADDED or REMOVED to split Death/Revive logic.
+	ASC->RemoveLooseGameplayTag(MyraGameplayTags::Myra_State_Dead);
+
+	// Apply the Respawn Gameplay Effect
+	if (RespawnGameplayEffect)
+	{
+		// Create the context (who is causing this effect? In this case, the pawn itself)
+		FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
+		ContextHandle.AddInstigator(GetOwner(), GetOwner());
+
+		// Generate the spec handle using the class, a level (1.0f), and the context
+		FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(RespawnGameplayEffect, 1.0f, ContextHandle);
+
+		if (SpecHandle.IsValid())
+		{
+			// Apply it to ourselves
+			ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		}
+	}
+	else
+	{
+		UE_LOG(LogMyra, Warning, TEXT("MyraPawnAbilityComponent: RespawnGameplayEffect is not assigned!"));
+	}
 }
 
 bool UMyraPawnAbilityComponent::InitAbilitySystemForPlayerState()
