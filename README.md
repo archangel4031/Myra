@@ -47,8 +47,13 @@ The plugin contains all the necessary C++ files required to make Gameplay Abilit
 
 Download the latest version from the [Release Page](https://github.com/archangel4031/Myra/releases)
 
+### Tutorial Series on Gameplay Ability System (by [Ali Elzoheiry](https://www.youtube.com/@AliElZoheiry)):
 
-### Tutorial Series (Old but still mostly valid):
+This is made for UE 5.6 and I think this is the *BEST* GAS tutorial series out there.
+
+[Gameplay Ability System (GAS) Course | UE5](https://www.youtube.com/playlist?list=PLNwKK6OwH7eVaq19HBUEL3UnPAfbpcUSL)
+
+### Tutorial Series by me (Old but still mostly valid):
 
 I have already created tutorial series on using Gameplay Ability System with Blueprints. I highly recommend you watch the tutorial series to get familiar with Gameplay Ability System. The tutorial series also cover C++ explanations that are easy to understand even for non-programmers.
 
@@ -69,8 +74,16 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
 
 **Important:** This update intruduces breaking changes. Read changes carefully before upgrading.
 
-- Ver 2.0.0-beta-5
-    - Added custom Log category for Myra
-    - Added Blueprint helpers to retrieve Granted Abilities from ASC
+- Ver 2.0.0-beta-6
+    - FIXED: Ability Set granting on client causes crash
+    - FIXED: `EnsureDefaultAttributeSet` Creates Duplicate Attribute Sets on Clients
+    - FIXED: Two Separate Ability Granting Pipelines with No Cross-Checking
+
+    - FIXED: `InitAbilitySystemOwned` Is Called Redundantly on Each Possession for Owned-ASC Pawns
+    - Auto add Loose Gameplay Tag on death. Added Respawn Function as well to `PawnAbilityComponent`
+    - Death logic is now unified `On Death Event` (exposed to BP)
+    - Added new BP function to `Give Ability and Bind to Input Tag`
+    - Added function to `Try Activate Ablity by Input Tag`
+    - Update README.md with new Tutorial Series link
 
 For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)

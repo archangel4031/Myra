@@ -1,4 +1,15 @@
 #### Changelog
+
+- Ver 2.0.0-beta-6
+    - FIXED: Ability Set granting on client causes crash
+    - FIXED: `EnsureDefaultAttributeSet` Creates Duplicate Attribute Sets on Clients
+    - FIXED: Two Separate Ability Granting Pipelines with No Cross-Checking
+
+    - FIXED: `InitAbilitySystemOwned` Is Called Redundantly on Each Possession for Owned-ASC Pawns
+    - Auto add Loose Gameplay Tag on death. Added Respawn Function as well to `PawnAbilityComponent`
+    - Death logic is now unified `On Death Event` (exposed to BP)
+    - Added new BP function to `Give Ability and Bind to Input Tag`
+    - Added function to `Try Activate Ablity by Input Tag`
 - Ver 2.0.0-beta-5
     - Added custom Log category for Myra
     - Added Blueprint helpers to retrieve Granted Abilities from ASC
