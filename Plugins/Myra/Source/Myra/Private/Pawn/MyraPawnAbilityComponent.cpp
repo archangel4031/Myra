@@ -218,6 +218,13 @@ bool UMyraPawnAbilityComponent::InitAbilitySystemForPlayerState()
 
 void UMyraPawnAbilityComponent::InitAbilitySystemOwned()
 {
+
+	// Fix: Guard against redundant initialization on subsequent possessions
+	if (bAbilitySystemInitialized)
+	{
+		return;
+	}
+
 	UMyraAbilitySystemComponent* OwnedAbilitySystemComponent = GetOwnedAbilitySystemComponent();
 	APawn* Pawn = GetPawn();
 	if (!OwnedAbilitySystemComponent || !Pawn)
