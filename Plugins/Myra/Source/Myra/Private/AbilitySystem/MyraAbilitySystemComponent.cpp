@@ -205,6 +205,28 @@ TArray<FMyraGrantedAbilityInfo> UMyraAbilitySystemComponent::GetGrantedAbilityIn
 		Info.AbilityLevel = Spec.Level;
 		Info.SpecHandle = Spec.Handle;
 
+		// Cooldown GE class
+		if (const UGameplayEffect* CooldownGE = AbilityCDO->GetCooldownGameplayEffect())
+		{
+			Info.CooldownEffectClass = CooldownGE->GetClass();
+		}
+
+		// Cooldown granted tags — use GetCooldownTags() on the ability CDO.
+		// This is the canonical accessor: it handles both pre-5.3 direct-field style
+		// AND UE5.3+ GE Component style (UTargetTagsGameplayEffectComponent)
+		// without us needing to touch UGameplayEffect internals at all.
+		const FGameplayTagContainer* CooldownTagsPtr = AbilityCDO->GetCooldownTags();
+		if (CooldownTagsPtr && !CooldownTagsPtr->IsEmpty())
+		{
+			Info.CooldownGrantedTags = *CooldownTagsPtr;
+		}
+
+		// Cost GE class
+		if (const UGameplayEffect* CostGE = AbilityCDO->GetCostGameplayEffect())
+		{
+			Info.CostEffectClass = CostGE->GetClass();
+		}
+
 		// Input tag is stored in the spec's DynamicAbilityTags — this is set by
 		// UMyraAbilitySet::GiveToAbilitySystem when it calls
 		// AbilitySpec.GetDynamicSpecSourceTags().AddTag(Entry.InputTag).

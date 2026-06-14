@@ -107,6 +107,21 @@ struct FMyraGrantedAbilityInfo
 	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
 	FGameplayTag InputTag;
 
+	/** Cooldown Gameplay Effect class applied while this ability is on cooldown.
+ *  May be null if the ability defines no cooldown. */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability")
+	TSubclassOf<UGameplayEffect> CooldownEffectClass;
+
+	/** Cost Gameplay Effect class consumed when this ability activates.
+	 *  May be null if the ability defines no cost. */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability")
+	TSubclassOf<UGameplayEffect> CostEffectClass;
+
+	/** Tags that the Cooldown GE grants to the owner while the cooldown is active.
+	 *  Empty when CooldownEffectClass is null. Useful for UI (e.g. "is this slot on cooldown?"). */
+	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability")
+	FGameplayTagContainer CooldownGrantedTags;
+
 	/** Current granted level of this ability spec. */
 	UPROPERTY(BlueprintReadOnly, Category = "Myra|Ability Info")
 	int32 AbilityLevel = 1;
