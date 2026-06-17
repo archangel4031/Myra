@@ -74,16 +74,8 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
 
 **Important:** This update intruduces breaking changes. Read changes carefully before upgrading.
 
-- Ver 2.0.0-beta-6
-    - FIXED: Ability Set granting on client causes crash
-    - FIXED: `EnsureDefaultAttributeSet` Creates Duplicate Attribute Sets on Clients
-    - FIXED: Two Separate Ability Granting Pipelines with No Cross-Checking
-
-    - FIXED: `InitAbilitySystemOwned` Is Called Redundantly on Each Possession for Owned-ASC Pawns
-    - Auto add Loose Gameplay Tag on death. Added Respawn Function as well to `PawnAbilityComponent`
-    - Death logic is now unified `On Death Event` (exposed to BP)
-    - Added new BP function to `Give Ability and Bind to Input Tag`
-    - Added function to `Try Activate Ablity by Input Tag`
-    - Update README.md with new Tutorial Series link
+- Ver 2.0.0-beta-7
+    - Updated Ability Infos Struct with more useful data for UI
+    - Added functions for getting float magnitudes for Cost and Cooldowns
 
 For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)

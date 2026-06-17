@@ -1,5 +1,8 @@
 #### Changelog
 
+- Ver 2.0.0-beta-7
+    - Updated Ability Infos Struct with more useful data for UI
+    - Added functions for getting float magnitudes for Cost and Cooldowns
 - Ver 2.0.0-beta-6
     - FIXED: Ability Set granting on client causes crash
     - FIXED: `EnsureDefaultAttributeSet` Creates Duplicate Attribute Sets on Clients

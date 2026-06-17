@@ -240,6 +240,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Myra|Abilities")
 	UMyraGameplayAbility* GetGrantedAbilityCDOByInputTag(FGameplayTag InputTag) const;
 
+	/** Returns the static cooldown duration baked into a Cooldown GE class.
+	 *  Returns -1 if the magnitude is dynamic (SetByCaller / AttributeBased). */
+	UFUNCTION(BlueprintPure, Category = "Myra|Ability|Info", meta = (DisplayName = "Get Cooldown Duration From GE Class"))
+	static float GetCooldownDurationFromGEClass(TSubclassOf<UGameplayEffect> CooldownGEClass, float AbilityLevel = 1.f);
+
+	/** Returns the static cost magnitude for a given attribute from a Cost GE class.
+	 *  Returns -1 if the magnitude is dynamic. */
+	UFUNCTION(BlueprintPure, Category = "Myra|Ability|Info", meta = (DisplayName = "Get Cost Magnitude From GE Class"))
+	static float GetCostMagnitudeFromGEClass(TSubclassOf<UGameplayEffect> CostGEClass, FGameplayAttribute Attribute, float AbilityLevel = 1.f);
+
 	/**
 	 * Grants an ability and registers it with Myra's input system by storing
 	 * InputTag in the spec's DynamicSpecSourceTags.

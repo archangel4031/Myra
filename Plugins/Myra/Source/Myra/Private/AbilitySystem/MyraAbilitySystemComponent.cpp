@@ -270,6 +270,31 @@ UMyraGameplayAbility* UMyraAbilitySystemComponent::GetGrantedAbilityCDOByInputTa
 	return nullptr;
 }
 
+float UMyraAbilitySystemComponent::GetCooldownDurationFromGEClass(TSubclassOf<UGameplayEffect> CooldownGEClass, float AbilityLevel)
+{
+	if (!CooldownGEClass) { return -1.f; }
+	const UGameplayEffect* CDO = CooldownGEClass.GetDefaultObject();
+	float Out = -1.f;
+	CDO->DurationMagnitude.GetStaticMagnitudeIfPossible(AbilityLevel, Out);
+	return Out;
+}
+
+float UMyraAbilitySystemComponent::GetCostMagnitudeFromGEClass(TSubclassOf<UGameplayEffect> CostGEClass, FGameplayAttribute Attribute, float AbilityLevel)
+{
+	if (!CostGEClass) { return -1.f; }
+	const UGameplayEffect* CDO = CostGEClass.GetDefaultObject();
+	for (const FGameplayModifierInfo& Mod : CDO->Modifiers)
+	{
+		if (Mod.Attribute == Attribute)
+		{
+			float Out = -1.f;
+			Mod.ModifierMagnitude.GetStaticMagnitudeIfPossible(AbilityLevel, Out);
+			return Out;
+		}
+	}
+	return -1.f;
+}
+
 FGameplayAbilitySpecHandle UMyraAbilitySystemComponent::GiveAbilityWithInputTag(
 	TSubclassOf<UGameplayAbility> AbilityClass,
 	int32 Level,
