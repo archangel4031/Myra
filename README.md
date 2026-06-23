@@ -10,7 +10,7 @@
 [![Discord](https://img.shields.io/discord/820665024137789472?label=discord&style=for-the-badge)](https://discord.gg/nfkTafPJKK)
 [![GitHub last commit](https://img.shields.io/github/last-commit/archangel4031/Myra?color=%237d0096&style=for-the-badge)](https://github.com/archangel4031/Myra)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/archangel4031/Myra?color=%23ad0000&label=latest%20release&style=for-the-badge)](https://github.com/archangel4031/Myra/releases)
-![Static Badge](https://img.shields.io/badge/Unreal_Engine-5.7-cyan?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Unreal_Engine-5.8-cyan?style=for-the-badge)
 [![GitHub repo size](https://img.shields.io/github/repo-size/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra)
 [![GitHub forks](https://img.shields.io/github/forks/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/network/members)
 [![GitHub Repo stars](https://img.shields.io/github/stars/archangel4031/Myra?style=for-the-badge)](https://github.com/archangel4031/Myra/stargazers)
