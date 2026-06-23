@@ -26,10 +26,6 @@ Refer to [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to use 
 
 ---
 
-### ⚠️ WARNING ⚠️
-
-Myra is in beta phase of development. It is not recommended to use Myra in production just yet. You are encouraged to contribute to the development of the new plugin and provide feedback.
-
 The default branch is now *main* instead of *master*. GAS Associate is deprecated and can be found on the *master* branch. GAS Associate is _NOT_ compatible with Myra.
 
 ---
@@ -49,7 +45,7 @@ Download the latest version from the [Release Page](https://github.com/archangel
 
 ### Tutorial Series on Gameplay Ability System (by [Ali Elzoheiry](https://www.youtube.com/@AliElZoheiry)):
 
-This is made for UE 5.6 and I think this is the *BEST* GAS tutorial series out there.
+This is made for UE 5.6 and I think this is the **BEST** GAS tutorial series out there.
 
 [Gameplay Ability System (GAS) Course | UE5](https://www.youtube.com/playlist?list=PLNwKK6OwH7eVaq19HBUEL3UnPAfbpcUSL)
 
@@ -72,10 +68,8 @@ Refer to the [wiki pages](https://github.com/archangel4031/Myra/wiki) on how to 
 
 #### Changelog
 
-**Important:** This update intruduces breaking changes. Read changes carefully before upgrading.
-
-- Ver 2.0.0-beta-7
-    - Updated Ability Infos Struct with more useful data for UI
-    - Added functions for getting float magnitudes for Cost and Cooldowns
+- Ver 2.0.0 **(Stable Release)**
+    - Plugin is out of beta
+    - Code updated for UE 5.8
 
 For full changes, see [CHANGELOG file](https://github.com/archangel4031/Myra/blob/main/CHANGELOG.md)

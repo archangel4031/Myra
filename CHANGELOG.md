@@ -1,5 +1,8 @@
 #### Changelog
 
+- Ver 2.0.0 **(Stable Release)**
+    - Plugin is out of beta
+    - Code updated for UE 5.8
 - Ver 2.0.0-beta-7
     - Updated Ability Infos Struct with more useful data for UI
     - Added functions for getting float magnitudes for Cost and Cooldowns

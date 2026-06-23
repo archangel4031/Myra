@@ -162,7 +162,7 @@ bool UMyraAbilitySystemComponent::HasAttributeSetOfClass(TSubclassOf<UAttributeS
 	if (const AActor* MyraOwnerActor = GetOwner())
 	{
 		TArray<UObject*> OwnerSubobjects;
-		GetObjectsWithOuter(const_cast<AActor*>(MyraOwnerActor), OwnerSubobjects, false);
+		GetObjectsWithOuter(const_cast<AActor*>(MyraOwnerActor), OwnerSubobjects, EGetObjectsFlags::None);
 
 		for (UObject* Object : OwnerSubobjects)
 		{
@@ -642,7 +642,7 @@ void UMyraAbilitySystemComponent::EnsureDefaultAttributeSet()
 	}
 
 	TArray<UObject*> OwnerSubobjects;
-	GetObjectsWithOuter(MyraOwnerActor, OwnerSubobjects, false);
+	GetObjectsWithOuter(MyraOwnerActor, OwnerSubobjects, EGetObjectsFlags::None);
 
 	for (UObject* Object : OwnerSubobjects)
 	{

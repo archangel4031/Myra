@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "2.0.0-beta-7",
+	"VersionName": "2.0.0",
 	"FriendlyName": "Myra",
 	"Description": "Make your life easier while using Unreal's Gameplay Ability System. ",
 	"Category": "Gameplay",
@@ -11,7 +11,7 @@
 	"MarketplaceURL": "",
 	"SupportURL": "",
 	"CanContainContent": true,
-	"IsBetaVersion": true,
+	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [

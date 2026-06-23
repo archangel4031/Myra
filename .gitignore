@@ -16,3 +16,10 @@ AGENTS.md
 
 # Remove generated Custom Attribute Sets
 CustomAttributeSets/
+
+# Remove Solution Files
+*.sln
+*.slnx
+
+# Remove Visual Studio Tools Editor Config
+.editorconfig
